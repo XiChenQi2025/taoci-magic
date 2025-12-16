@@ -1,1 +1,388 @@
+/* ==============================
+   桃汽水的魔力补给站 - 主样式
+   荧光粉主题，梦幻可爱风格
+============================== */
 
+/* 基础重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* CSS变量定义 - 荧光粉主题 */
+:root {
+    /* 主色调：荧光粉系列 */
+    --color-pink-1: #FF00FF;     /* 主荧光粉 */
+    --color-pink-2: #FF66CC;     /* 次荧光粉 */
+    --color-pink-3: #FFB6C1;     /* 浅粉 */
+    --color-pink-4: #FFE4E1;     /* 极浅粉 */
+    --color-pink-glow: rgba(255, 105, 180, 0.7); /* 发光效果 */
+    
+    /* 辅助荧光色（用于点缀） */
+    --color-fluo-red: #FF4444;
+    --color-fluo-green: #44FF44;
+    --color-fluo-yellow: #FFFF44;
+    --color-fluo-purple: #AA44FF;
+    --color-fluo-blue: #4444FF;
+    --color-fluo-orange: #FFAA44;
+    
+    /* 中性色 */
+    --color-white: #FFFFFF;
+    --color-black: #222222;
+    --color-gray-light: #F8F8F8;
+    --color-gray: #CCCCCC;
+    --color-gray-dark: #666666;
+    
+    /* 渐变 */
+    --gradient-primary: linear-gradient(135deg, var(--color-pink-1), var(--color-pink-2));
+    --gradient-rainbow: linear-gradient(90deg, 
+        var(--color-fluo-red), 
+        var(--color-fluo-orange),
+        var(--color-fluo-yellow),
+        var(--color-fluo-green),
+        var(--color-fluo-blue),
+        var(--color-fluo-purple)
+    );
+    
+    /* 发光效果 */
+    --glow-pink: 0 0 15px var(--color-pink-glow);
+    --glow-rainbow: 0 0 20px rgba(255, 255, 255, 0.5);
+    
+    /* 布局变量 */
+    --border-radius: 16px;
+    --border-radius-lg: 24px;
+    --border-radius-sm: 8px;
+    
+    /* 间距 */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-xxl: 48px;
+    
+    /* 阴影 */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+    
+    /* 动画时长 */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* 基础样式 */
+body {
+    font-family: 'Ma Shan Zheng', cursive, 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(135deg, #FFF5FF 0%, #FFE6F2 100%);
+    color: var(--color-black);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* 加载动画 */
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity var(--transition-slow);
+}
+
+.loading-content {
+    text-align: center;
+    animation: pulse 2s infinite;
+}
+
+.loading-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-lg);
+    animation: float 3s ease-in-out infinite;
+}
+
+.loading-text {
+    font-size: 1.5rem;
+    color: var(--color-white);
+    font-weight: bold;
+}
+
+/* 主应用容器 */
+.app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+}
+
+/* 头部样式 */
+.header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px solid transparent;
+    border-image: var(--gradient-rainbow);
+    border-image-slice: 1;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Logo样式 */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.logo-icon {
+    font-size: 2rem;
+    animation: rotate 20s linear infinite;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: var(--glow-pink);
+}
+
+.live-badge {
+    background: var(--color-fluo-red);
+    color: white;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+/* 导航菜单 */
+.nav-list {
+    display: flex;
+    list-style: none;
+    gap: var(--space-lg);
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--color-gray-dark);
+    text-decoration: none;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--border-radius);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-link:hover {
+    color: var(--color-pink-1);
+    background: rgba(255, 0, 255, 0.1);
+}
+
+.nav-link.active {
+    color: var(--color-pink-1);
+    background: rgba(255, 0, 255, 0.1);
+    font-weight: bold;
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    width: 80%;
+    height: 3px;
+    background: var(--gradient-primary);
+    border-radius: 3px;
+}
+
+/* 移动端菜单按钮 */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--color-pink-1);
+    cursor: pointer;
+}
+
+/* 主内容区域 */
+.main {
+    flex: 1;
+    padding: var(--space-xl) var(--space-lg);
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.page {
+    animation: slideIn 0.5s ease;
+}
+
+.hidden {
+    display: none;
+}
+
+/* 页脚样式 */
+.footer {
+    background: rgba(255, 255, 255, 0.9);
+    border-top: 3px solid transparent;
+    border-image: var(--gradient-rainbow);
+    border-image-slice: 1;
+    padding: var(--space-xl) 0;
+    margin-top: auto;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-xl);
+}
+
+.footer-section h3 {
+    color: var(--color-pink-1);
+    margin-bottom: var(--space-md);
+    font-size: 1.2rem;
+}
+
+.footer-section p {
+    color: var(--color-gray-dark);
+    line-height: 1.6;
+    margin-bottom: var(--space-sm);
+}
+
+.footer-link {
+    color: var(--color-pink-2);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.footer-link:hover {
+    color: var(--color-pink-1);
+    text-decoration: underline;
+}
+
+.footer-copyright {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-gray);
+    color: var(--color-gray-dark);
+    font-size: 0.9rem;
+}
+
+.footer-note {
+    margin-top: var(--space-sm);
+    color: var(--color-pink-2);
+}
+
+/* 动画定义 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes slideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .header-container {
+        flex-wrap: wrap;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+    
+    .nav {
+        display: none;
+        width: 100%;
+        margin-top: var(--space-md);
+    }
+    
+    .nav.active {
+        display: block;
+    }
+    
+    .nav-list {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+    
+    .nav-link {
+        justify-content: center;
+        padding: var(--space-md);
+    }
+    
+    .logo-text {
+        font-size: 1.2rem;
+    }
+    
+    .main {
+        padding: var(--space-lg) var(--space-md);
+    }
+    
+    .footer-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 打印样式 */
+@media print {
+    .header, .footer, .menu-toggle {
+        display: none;
+    }
+    
+    .main {
+        padding: 0;
+    }
+}
