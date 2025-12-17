@@ -18,7 +18,7 @@ class TaociFramework {
                 name: '首页',
                 icon: 'fas fa-home',
                 enabled: true,
-                builtIn: true // 内置模块
+                builtIn: false // 内置模块
             },
             {
                 id: 'game-bubble',
@@ -142,82 +142,129 @@ class TaociFramework {
     
     // 加载模块内容
     async loadModule(moduleId) {
-        // 如果是首页，使用内置内容
+        console.log(`📦 加载模块: ${moduleId}`);
+        
+        // 如果是首页，直接加载内置内容
         if (moduleId === 'home') {
             this.loadHomeModule();
             return;
         }
         
-        // 检查模块是否已注册
-        if (this.modules.has(moduleId)) {
-            const module = this.modules.get(moduleId);
-            this.moduleContainer.innerHTML = module.content || '<p>模块内容</p>';
-            
-            // 执行模块初始化函数（如果存在）
-            if (module.onLoad) {
-                setTimeout(() => module.onLoad(), 100);
-            }
-            return;
-        }
-        
-        // 动态加载模块文件
-        await this.loadModuleFiles(moduleId);
+        // 其他模块动态加载
+        await this.loadExternalModule(moduleId);
     }
     
     // 加载首页模块（内置）
     loadHomeModule() {
-        // 首页HTML内容
-        const homeHTML = `
+        console.log('🏠 加载内置首页模块');
+        
+        // 直接显示加载状态
+        this.moduleContainer.innerHTML = `
+            <div class="module-loading">
+                <div class="loading-spinner"></div>
+                <p>正在加载首页...</p>
+            </div>
+        `;
+        
+        // 动态加载首页模块
+        this.loadHomeModuleDynamically();
+    }
+    
+    // 动态加载首页模块
+    async loadHomeModuleDynamically() {
+        try {
+            console.log('🏠 开始动态加载首页模块');
+            
+            // 1. 创建模块实例
+            const homeModule = {
+                id: 'home',
+                name: '首页',
+                icon: 'fas fa-home'
+            };
+            
+            // 2. 直接注入内容（简化版）
+            this.moduleContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h2 style="color: var(--flamingo-pink); margin-bottom: 20px;">桃汽水的魔力补给站</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 30px;">
+                        正在加载精灵公主的皮套展示...
+                    </p>
+                    <div class="loading-spinner"></div>
+                </div>
+            `;
+            
+            // 3. 延迟加载完整内容
+            setTimeout(async () => {
+                try {
+                    // 动态创建script标签加载home.js
+                    const script = document.createElement('script');
+                    script.src = 'modules/home/home.js';
+                    script.type = 'module';
+                    script.onload = () => {
+                        console.log('✅ 首页模块脚本加载成功');
+                        
+                        // 手动触发初始化
+                        if (window.HomeModule && window.HomeModule.init) {
+                            window.HomeModule.init();
+                        } else {
+                            // 如果模块未自动初始化，显示默认内容
+                            this.showDefaultHomeContent();
+                        }
+                    };
+                    script.onerror = () => {
+                        console.error('❌ 首页模块脚本加载失败');
+                        this.showDefaultHomeContent();
+                    };
+                    
+                    document.head.appendChild(script);
+                    
+                    // 同时加载CSS
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = 'modules/home/home.css';
+                    link.onerror = () => {
+                        console.warn('⚠️ 首页CSS加载失败，使用备用样式');
+                    };
+                    document.head.appendChild(link);
+                    
+                } catch (error) {
+                    console.error('❌ 加载首页模块失败:', error);
+                    this.showDefaultHomeContent();
+                }
+            }, 100);
+            
+        } catch (error) {
+            console.error('❌ 动态加载首页模块失败:', error);
+            this.showDefaultHomeContent();
+        }
+    }
+    
+    // 显示默认首页内容（备用）
+    showDefaultHomeContent() {
+        console.log('⚠️ 使用备用首页内容');
+        
+        this.moduleContainer.innerHTML = `
             <section class="home-module">
-                <!-- 角色展示区域 -->
                 <div class="character-container">
-                    <div class="character-display" id="character-display">
-                        <div class="loading-placeholder">
-                            <div class="loading-emoji">🍑</div>
-                            <p>加载中...</p>
-                        </div>
+                    <div class="character-display">
+                        <img src="./assets/images/character/taoci-avatar-1.png" 
+                             alt="桃汽水皮套"
+                             class="character-image"
+                             onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"50\" cy=\"50\" r=\"45\" fill=\"%23FF8EAF\"/><text x=\"50\" y=\"60\" text-anchor=\"middle\" font-size=\"20\" fill=\"white\">🍑</text></svg>'">
                     </div>
-                    
-                    <!-- 3D立体阴影 -->
-                    <div class="character-shadow" id="character-shadow"></div>
-                    
-                    <!-- 漂浮粒子效果 -->
-                    <div class="particles-container" id="particles-container"></div>
                 </div>
                 
-                <!-- 欢迎卡片 -->
                 <div class="greeting-card">
-                    <h2 class="greeting-title" id="greeting-title">欢迎来到我的魔力补给站！</h2>
-                    <p class="greeting-text" id="greeting-text">我是来自异世界的精灵公主桃汽水~ 周年庆活动马上就要开始啦，快来一起收集魔力，参加有趣的游戏吧！</p>
-                    
-                    <!-- 随机图片指示器 -->
-                    <div class="random-indicator">
-                        <span class="indicator-label">当前展示：</span>
-                        <span class="indicator-value" id="current-image-index">加载中...</span>
-                        <span class="indicator-hint">（每次刷新随机展示）</span>
-                    </div>
-                </div>
-                
-                <!-- 操作提示 -->
-                <div class="action-hint">
-                    <div class="hint-item">
-                        <div class="hint-icon">🎮</div>
-                        <p>点击左侧导航开始探索功能</p>
-                    </div>
-                    <div class="hint-item">
-                        <div class="hint-icon">✨</div>
-                        <p>将鼠标移到图片上查看3D效果</p>
-                    </div>
+                    <h2 class="greeting-title">欢迎来到我的魔力补给站！</h2>
+                    <p class="greeting-text">
+                        我是来自异世界的精灵公主桃汽水~ 周年庆活动马上就要开始啦，
+                        快来一起收集魔力，参加有趣的游戏吧！
+                    </p>
                 </div>
             </section>
         `;
-        
-        // 设置内容
-        this.moduleContainer.innerHTML = homeHTML;
-        
-        // 加载首页逻辑
-        this.loadHomeLogic();
     }
+    
     
     // 加载首页逻辑
     async loadHomeLogic() {
