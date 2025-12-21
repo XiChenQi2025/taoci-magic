@@ -78,7 +78,7 @@ export default class MessageBoardModule {
             // 动态加载外部CSS文件
             const link = document.createElement('link');
             link.rel = 'stylesheet';
-            link.href = './message-board.css';
+            link.href = './styles/modules/message-board.css';
             link.id = 'message-board-styles-external';
             document.head.appendChild(link);
         }
