@@ -5,8 +5,8 @@
     position: sticky;
     top: 0;
     z-index: 1000;
-    background: rgba(10, 10, 10, 0.95);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
     border-bottom: 2px solid;
     border-image: var(--rainbow-gradient) 1;
     padding: 1rem 2rem;
@@ -43,22 +43,34 @@
 /* 桌面导航 */
 .nav-desktop {
     display: flex;
-    gap: 2rem;
+    gap: 1rem;
 }
 
 .nav-link {
     color: white;
     text-decoration: none;
     font-size: 1.1rem;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1.5rem;
     border-radius: 25px;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
+
+/* 修复：导航按钮纯色背景 */
+.nav-link.pink { background-color: var(--neon-pink); border-color: var(--neon-pink); }
+.nav-link.blue { background-color: var(--neon-blue); border-color: var(--neon-blue); }
+.nav-link.purple { background-color: var(--neon-purple); border-color: var(--neon-purple); }
+.nav-link.yellow { background-color: var(--neon-yellow); border-color: var(--neon-yellow); color: #333; }
+.nav-link.green { background-color: var(--neon-green); border-color: var(--neon-green); }
 
 .nav-link:hover {
     transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .nav-link::before {
@@ -93,21 +105,26 @@
     text-shadow: 0 0 10px var(--neon-pink);
 }
 
-/* 移动端菜单 */
+/* 移动端菜单 - 改为圆角按钮样式 */
 .mobile-menu {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
     z-index: 2000;
     display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2rem;
+    gap: 1rem;
     padding: 2rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--neon-pink);
 }
 
 .mobile-menu.active {
@@ -117,19 +134,19 @@
 
 @keyframes slideIn {
     from {
-        transform: translateY(-100%);
+        transform: translate(-50%, -20px);
         opacity: 0;
     }
     to {
-        transform: translateY(0);
+        transform: translate(-50%, 0);
         opacity: 1;
     }
 }
 
 .close-menu-btn {
     position: absolute;
-    top: 2rem;
-    right: 2rem;
+    top: 1rem;
+    right: 1rem;
     background: none;
     border: none;
     color: white;
@@ -137,10 +154,22 @@
     cursor: pointer;
 }
 
+/* 移动端菜单链接 - 圆角按钮样式 */
+.mobile-menu .nav-link {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem;
+    border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin-bottom: 0.5rem;
+}
+
 /* 主要内容区 */
 #main-content {
     min-height: calc(100vh - 180px);
     padding: 2rem;
+    position: relative;
+    z-index: 1;
 }
 
 /* 页脚样式 */
@@ -149,7 +178,10 @@
     padding: 2rem;
     text-align: center;
     position: relative;
-    background: rgba(10, 10, 10, 0.9);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-top: 2px solid;
+    border-image: var(--rainbow-gradient) 1;
 }
 
 .footer-top-line {
@@ -162,6 +194,17 @@
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.7);
     line-height: 1.6;
+}
+
+/* GitHub链接样式 */
+.github-link {
+    color: var(--neon-pink);
+    text-decoration: none;
+    margin: 0 0.5rem;
+}
+
+.github-link:hover {
+    text-shadow: var(--glow-pink);
 }
 
 /* 响应式设计 */
@@ -184,5 +227,6 @@
     
     #main-content {
         padding: 1rem;
+        min-height: calc(100vh - 200px);
     }
 }
