@@ -17,10 +17,9 @@ export default class Header {
         const brandDiv = document.createElement('div');
         brandDiv.className = 'header-brand';
         
-        const avatar = document.createElement('img');
+        const avatar = document.createElement('div');
         avatar.className = 'brand-avatar';
-        avatar.src = 'https://via.placeholder.com/50/FF00FF/FFFFFF?text=桃';
-        avatar.alt = '桃汽水';
+        avatar.textContent = '🍑'; // 使用桃子emoji
         
         const title = document.createElement('h1');
         title.className = 'brand-title';
