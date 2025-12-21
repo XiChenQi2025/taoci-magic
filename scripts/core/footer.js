@@ -20,10 +20,14 @@ export default class Footer {
         line1.textContent = '本网站为桃汽水粉丝应援平台，仅供娱乐交流使用，非商业性质';
         
         const line2 = document.createElement('p');
-        line2.textContent = '© 2024 桃汽水の魔力补给站 | 版本: v1.0.0 | 开发团队: taoci-dev-group';
+        line2.innerHTML = '本网站为开源项目，GitHub仓库: <a href="https://xichenqi2025.github.io/taoci-magic" target="_blank" class="github-link">xichenqi2025.github.io/taoci-magic</a>';
+        
+        const line3 = document.createElement('p');
+        line3.textContent = '© 2024 桃汽水の魔力补给站 | 版本: v1.0.0 | 开发团队: taoci-dev-group';
         
         textDiv.appendChild(line1);
         textDiv.appendChild(line2);
+        textDiv.appendChild(line3);
         
         footer.appendChild(topLine);
         footer.appendChild(textDiv);

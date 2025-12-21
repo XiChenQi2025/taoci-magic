@@ -37,21 +37,11 @@ export default class Header {
         
         this.routes.forEach(route => {
             const link = document.createElement('a');
-            link.className = 'nav-link';
+            link.className = `nav-link ${this.getColorClass(route.navColor)}`;
             link.href = route.path;
-            link.textContent = route.name;
+            link.innerHTML = `${route.emoji} ${route.name}`;
             link.setAttribute('data-path', route.path);
-            link.style.color = route.navColor;
             link.style.setProperty('--neon-color', route.navColor);
-            
-            // 添加悬停效果
-            link.style.setProperty('--hover-glow', 
-                route.navColor.includes('pink') ? 'var(--glow-pink)' :
-                route.navColor.includes('purple') ? 'var(--glow-purple)' :
-                route.navColor.includes('blue') ? 'var(--glow-blue)' :
-                route.navColor.includes('yellow') ? 'var(--glow-yellow)' :
-                route.navColor.includes('green') ? 'var(--glow-green)' : 'var(--glow-orange)'
-            );
             
             navDesktop.appendChild(link);
         });
@@ -61,7 +51,7 @@ export default class Header {
         // 移动端菜单按钮
         const mobileBtn = document.createElement('button');
         mobileBtn.className = 'mobile-menu-btn';
-        mobileBtn.innerHTML = '≡';
+        mobileBtn.innerHTML = '☰';
         mobileBtn.setAttribute('aria-label', '打开菜单');
         
         header.appendChild(mobileBtn);
@@ -79,12 +69,11 @@ export default class Header {
         
         this.routes.forEach(route => {
             const link = document.createElement('a');
-            link.className = 'nav-link';
+            link.className = `nav-link ${this.getColorClass(route.navColor)}`;
             link.href = route.path;
-            link.textContent = route.name;
+            link.innerHTML = `${route.emoji} ${route.name}`;
             link.setAttribute('data-path', route.path);
-            link.style.color = route.navColor;
-            link.style.fontSize = '1.5rem';
+            link.style.fontSize = '1.2rem';
             
             mobileMenu.appendChild(link);
         });
@@ -95,6 +84,15 @@ export default class Header {
         this.mobileMenu = mobileMenu;
         this.mobileBtn = mobileBtn;
         this.closeBtn = closeBtn;
+    }
+    
+    getColorClass(navColor) {
+        if (navColor.includes('pink')) return 'pink';
+        if (navColor.includes('blue')) return 'blue';
+        if (navColor.includes('purple')) return 'purple';
+        if (navColor.includes('yellow')) return 'yellow';
+        if (navColor.includes('green')) return 'green';
+        return '';
     }
     
     bindEvents() {
@@ -127,6 +125,15 @@ export default class Header {
                 this.mobileMenu.classList.remove('active');
             });
         }
+        
+        // 点击外部关闭移动菜单
+        document.addEventListener('click', (e) => {
+            if (this.mobileMenu.classList.contains('active') && 
+                !this.mobileMenu.contains(e.target) && 
+                e.target !== this.mobileBtn) {
+                this.mobileMenu.classList.remove('active');
+            }
+        });
         
         // 窗口大小变化
         window.addEventListener('resize', () => {

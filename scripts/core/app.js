@@ -2,11 +2,11 @@
 class App {
     constructor() {
         this.routes = [
-            { path: '/', name: '首页', module: 'home', navColor: 'var(--neon-pink)' },
-            { path: '/games', name: '小游戏', module: 'games', navColor: 'var(--neon-blue)' },
-            { path: '/answer-book', name: '答案之书', module: 'answer-book', navColor: 'var(--neon-purple)' },
-            { path: '/fortune', name: '盲盒运势', module: 'fortune', navColor: 'var(--neon-yellow)' },
-            { path: '/message-board', name: '留言角', module: 'message-board', navColor: 'var(--neon-green)' }
+            { path: '/', name: '首页', module: 'home', navColor: 'var(--neon-pink)', emoji: '🏠' },
+            { path: '/games', name: '小游戏', module: 'games', navColor: 'var(--neon-blue)', emoji: '🎮' },
+            { path: '/answer-book', name: '答案之书', module: 'answer-book', navColor: 'var(--neon-purple)', emoji: '📖' },
+            { path: '/fortune', name: '盲盒运势', module: 'fortune', navColor: 'var(--neon-yellow)', emoji: '🔮' },
+            { path: '/message-board', name: '留言角', module: 'message-board', navColor: 'var(--neon-green)', emoji: '📝' }
         ];
         
         this.currentModule = null;
@@ -19,8 +19,15 @@ class App {
     }
     
     async init() {
+        // 添加背景层
+        this.addBackgroundOverlay();
+        
+        // 渲染页眉和页脚
         this.renderHeader();
         this.renderFooter();
+        
+        // 创建内容容器
+        this.createContentContainer();
         
         // 初始路由
         const path = window.location.pathname || '/';
@@ -30,6 +37,32 @@ class App {
         window.addEventListener('popstate', () => {
             this.navigate(window.location.pathname);
         });
+    }
+    
+    addBackgroundOverlay() {
+        const overlay = document.createElement('div');
+        overlay.className = 'background-overlay';
+        document.body.appendChild(overlay);
+    }
+    
+    createContentContainer() {
+        const container = document.getElementById('app-container');
+        
+        // 确保内容容器在页脚之前
+        const footer = document.getElementById('app-footer');
+        let content = document.getElementById('main-content');
+        
+        if (!content) {
+            content = document.createElement('main');
+            content.id = 'main-content';
+            
+            // 如果有页脚，在页脚之前插入；否则添加到容器末尾
+            if (footer) {
+                container.insertBefore(content, footer);
+            } else {
+                container.appendChild(content);
+            }
+        }
     }
     
     renderHeader() {
@@ -75,12 +108,11 @@ class App {
             window.history.pushState(null, '', path);
         }
         
-        // 创建内容容器
+        // 获取内容容器
         let content = document.getElementById('main-content');
         if (!content) {
-            content = document.createElement('main');
-            content.id = 'main-content';
-            document.getElementById('app-container').appendChild(content);
+            this.createContentContainer();
+            content = document.getElementById('main-content');
         }
         
         // 显示加载状态
@@ -119,9 +151,11 @@ class App {
             if (link.getAttribute('data-path') === activePath) {
                 link.style.fontWeight = 'bold';
                 link.style.textShadow = '0 0 10px currentColor';
+                link.style.boxShadow = '0 0 15px currentColor';
             } else {
                 link.style.fontWeight = 'normal';
                 link.style.textShadow = 'none';
+                link.style.boxShadow = 'none';
             }
         });
     }
