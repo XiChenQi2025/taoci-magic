@@ -72,7 +72,7 @@ export default class AnswerBookModule {
             // 动态加载外部CSS文件
             const link = document.createElement('link');
             link.rel = 'stylesheet';
-            link.href = './answer-book.css';
+            link.href = './styles/modules/answer-book.css';
             link.id = 'answer-book-styles-external';
             document.head.appendChild(link);
         }
