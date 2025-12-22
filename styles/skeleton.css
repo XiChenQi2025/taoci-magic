@@ -1,18 +1,19 @@
 /* 布局骨架样式 */
 
-/* 页眉样式 - 增加背景模糊度 */
+/* 页眉样式 - 增强模糊背景，移除透明 */
 #app-header {
     position: sticky;
     top: 0;
     z-index: 1000;
-    background: inherit;
+    background: rgba(20, 20, 30, 0.85); /* 添加深色半透明背景 */
     border-bottom: 2px solid;
     border-image: var(--rainbow-gradient) 1;
     padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    backdrop-filter: blur(30px) brightness(0.8);
+    backdrop-filter: blur(50px) brightness(0.7); /* 增强模糊和变暗 */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
 
 .header-brand {
@@ -30,23 +31,25 @@
     justify-content: center;
     font-size: 2rem;
     background: rgba(255, 255, 255, 0.1);
-    border: 2px solid var(--neon-pink);
-    box-shadow: var(--glow-pink);
-    animation: breath-glow 3s ease-in-out infinite;
+    border: 2px solid var(--barbie-pink);
+    box-shadow: var(--glow-effect-pink);
+    animation: glow-pulse 3s ease-in-out infinite;
 }
 
 /* 修复品牌标题文字颜色和阴影 */
 .brand-title {
     font-size: 1.5rem;
     font-weight: bold;
-    background: var(--rainbow-gradient);
+    background: linear-gradient(90deg, 
+        var(--barbie-pink), 
+        var(--barbie-pink-light), 
+        var(--barbie-pink));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     text-shadow: 
-        0 0 5px rgba(0, 0, 0, 0.5),
-        0 0 10px rgba(0, 0, 0, 0.3),
-        0 0 15px rgba(0, 0, 0, 0.2);
+        0 0 8px rgba(255, 105, 180, 0.4),
+        0 0 15px rgba(255, 105, 180, 0.2);
 }
 
 /* 桌面导航 */
@@ -56,7 +59,7 @@
 }
 
 .nav-link {
-    color: inherit; /* 继承颜色 */
+    color: inherit;
     text-decoration: none;
     font-size: 1.1rem;
     padding: 0.5rem 1.5rem;
@@ -70,8 +73,8 @@
     gap: 0.5rem;
 }
 
-/* 导航按钮纯色背景 */
-.nav-link.pink { background-color: var(--neon-pink); border-color: var(--neon-pink); color: white; }
+/* 导航按钮纯色背景 - 更新颜色变量 */
+.nav-link.pink { background-color: var(--barbie-pink); border-color: var(--barbie-pink); color: white; }
 .nav-link.blue { background-color: var(--neon-blue); border-color: var(--neon-blue); color: white; }
 .nav-link.purple { background-color: var(--neon-purple); border-color: var(--neon-purple); color: white; }
 .nav-link.yellow { background-color: var(--neon-yellow); border-color: var(--neon-yellow); color: black; }
@@ -79,7 +82,7 @@
 
 .nav-link:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* 移动端菜单按钮 */
@@ -94,17 +97,17 @@
 }
 
 .mobile-menu-btn:hover {
-    text-shadow: 0 0 10px var(--neon-pink);
+    text-shadow: var(--glow-effect-pink);
 }
 
-/* 移动端菜单 - 增加背景模糊度 */
+/* 移动端菜单 - 增强背景模糊，移除透明 */
 .mobile-menu {
     position: fixed;
     top: 80px;
     left: 50%;
     transform: translateX(-50%);
-    background: inherit;
-    backdrop-filter: blur(40px) brightness(0.7);
+    background: rgba(20, 20, 30, 0.95); /* 深色背景，不透明 */
+    backdrop-filter: blur(60px) brightness(0.6); /* 增强模糊和暗化 */
     border-radius: 20px;
     z-index: 2000;
     display: none;
@@ -115,8 +118,10 @@
     padding: 2rem;
     width: 90%;
     max-width: 400px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    border: 2px solid var(--neon-pink);
+    box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 105, 180, 0.2);
+    border: 2px solid var(--barbie-pink);
 }
 
 .mobile-menu.active {
@@ -156,7 +161,7 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.mobile-menu .nav-link.pink { background-color: var(--neon-pink); }
+.mobile-menu .nav-link.pink { background-color: var(--barbie-pink); }
 .mobile-menu .nav-link.blue { background-color: var(--neon-blue); }
 .mobile-menu .nav-link.purple { background-color: var(--neon-purple); }
 .mobile-menu .nav-link.yellow { background-color: var(--neon-yellow); }
@@ -175,7 +180,8 @@
     padding: 2rem;
     text-align: center;
     position: relative;
-    background: inherit; /* 改为继承背景 */
+    background: rgba(20, 20, 30, 0.85); /* 添加深色半透明背景 */
+    backdrop-filter: blur(30px) brightness(0.7);
     border-top: 2px solid;
     border-image: var(--rainbow-gradient) 1;
 }
@@ -188,19 +194,19 @@
 
 .footer-text {
     font-size: 0.9rem;
-    color: inherit; /* 继承颜色 */
+    color: inherit;
     line-height: 1.6;
 }
 
 /* GitHub链接样式 */
 .github-link {
-    color: var(--neon-pink);
+    color: var(--barbie-pink);
     text-decoration: none;
     margin: 0 0.5rem;
 }
 
 .github-link:hover {
-    text-shadow: var(--glow-pink);
+    text-shadow: var(--glow-effect-pink);
 }
 
 /* 响应式设计 - 加强 */
@@ -209,6 +215,7 @@
         padding: 0.75rem 1rem;
         flex-wrap: wrap;
         gap: 1rem;
+        backdrop-filter: blur(40px) brightness(0.6);
     }
     
     .brand-title {
@@ -243,6 +250,7 @@
     .mobile-menu {
         top: 70px;
         padding: 1.5rem;
+        backdrop-filter: blur(50px) brightness(0.5);
     }
     
     #app-footer {

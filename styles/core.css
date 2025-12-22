@@ -1,22 +1,49 @@
 /* 核心变量定义与重置样式 */
 :root {
-    /* 荧光主色 */
-    --neon-pink: #FF00FF;
-    --neon-purple: #BF00FF;
-    --neon-blue: #00BFFF;
-    --neon-yellow: #FFFF00;
-    --neon-green: #00FF00;
-    --neon-orange: #FFA500;
-
-    /* 发光效果 */
-    --glow-pink: 0 0 10px var(--neon-pink), 0 0 20px rgba(255, 0, 255, 0.5);
-    --glow-purple: 0 0 10px var(--neon-purple), 0 0 20px rgba(191, 0, 255, 0.5);
-    --glow-blue: 0 0 10px var(--neon-blue), 0 0 20px rgba(0, 191, 255, 0.5);
-    --glow-yellow: 0 0 10px var(--neon-yellow), 0 0 20px rgba(255, 255, 0, 0.5);
-    --glow-green: 0 0 10px var(--neon-green), 0 0 20px rgba(0, 255, 0, 0.5);
-    --glow-orange: 0 0 10px var(--neon-orange), 0 0 20px rgba(255, 165, 0, 0.5);
+    /* 芭比粉系列 + 泛光感 */
+    --barbie-pink: #FF69B4;
+    --barbie-pink-light: #FFB6C1;
+    --barbie-pink-deep: #DB7093;
+    --glow-pink: rgba(255, 105, 180, 0.8);
+    --glow-pink-light: rgba(255, 182, 193, 0.6);
     
-    --rainbow-gradient: linear-gradient(90deg, var(--neon-pink), var(--neon-purple), var(--neon-blue), var(--neon-green), var(--neon-yellow));
+    /* 辅助荧光色 - 调整为更柔和的泛光色 */
+    --neon-purple: #C71585;
+    --neon-blue: #87CEEB;
+    --neon-yellow: #FFD700;
+    --neon-green: #98FB98;
+    --neon-orange: #FFA07A;
+    
+    /* 泛光效果 - 多层发光模拟丁达尔效应 */
+    --glow-effect-pink: 
+        0 0 15px rgba(255, 105, 180, 0.5),
+        0 0 30px rgba(255, 105, 180, 0.3),
+        0 0 45px rgba(255, 182, 193, 0.2),
+        0 0 60px rgba(255, 182, 193, 0.1);
+    
+    --glow-effect-purple: 
+        0 0 15px rgba(199, 21, 133, 0.5),
+        0 0 30px rgba(199, 21, 133, 0.3);
+    
+    --glow-effect-blue: 
+        0 0 15px rgba(135, 206, 235, 0.5),
+        0 0 30px rgba(135, 206, 235, 0.3);
+    
+    --glow-effect-yellow: 
+        0 0 15px rgba(255, 215, 0, 0.5),
+        0 0 30px rgba(255, 215, 0, 0.3);
+    
+    --glow-effect-orange: 
+        0 0 15px rgba(255, 160, 122, 0.5),
+        0 0 30px rgba(255, 160, 122, 0.3);
+    
+    --rainbow-gradient: linear-gradient(90deg, 
+        var(--barbie-pink), 
+        var(--neon-purple), 
+        var(--neon-blue), 
+        var(--neon-green), 
+        var(--neon-yellow),
+        var(--neon-orange));
 }
 
 /* 重置样式 */
@@ -28,7 +55,7 @@
 
 body {
     background-color: transparent;
-    color: inherit; /* 改为继承浏览器颜色 */
+    color: inherit;
     font-family: 'Segoe UI', 'Microsoft YaHei', 'SimHei', Arial, sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
@@ -36,23 +63,34 @@ body {
     background: 
         radial-gradient(
             circle at 20% 30%,
-            rgba(255, 0, 255, 0.1) 0%,
-            transparent 50%
+            rgba(255, 105, 180, 0.15) 0%,
+            transparent 60%
         ),
         radial-gradient(
             circle at 80% 70%,
-            rgba(0, 191, 255, 0.1) 0%,
+            rgba(135, 206, 235, 0.15) 0%,
+            transparent 60%
+        ),
+        radial-gradient(
+            circle at 40% 80%,
+            rgba(255, 215, 0, 0.1) 0%,
             transparent 50%
         );
 }
 
-/* 呼吸光效动画 */
-@keyframes breath-glow {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
+/* 泛光呼吸动画 */
+@keyframes glow-pulse {
+    0%, 100% { 
+        opacity: 0.6;
+        filter: drop-shadow(0 0 5px var(--glow-pink-light));
+    }
+    50% { 
+        opacity: 1;
+        filter: drop-shadow(0 0 20px var(--glow-pink));
+    }
 }
 
-/* 浅色荧光模糊感背景层 */
+/* 浅色模糊背景层 - 增强泛光感 */
 .background-overlay {
     position: fixed;
     top: 0;
@@ -64,13 +102,13 @@ body {
     background: 
         radial-gradient(
             circle at 20% 30%,
-            rgba(255, 0, 255, 0.05) 0%,
-            transparent 50%
+            rgba(255, 105, 180, 0.08) 0%,
+            transparent 60%
         ),
         radial-gradient(
             circle at 80% 70%,
-            rgba(0, 191, 255, 0.05) 0%,
-            transparent 50%
+            rgba(135, 206, 235, 0.08) 0%,
+            transparent 60%
         );
-    filter: blur(20px);
+    filter: blur(30px) brightness(1.2);
 }

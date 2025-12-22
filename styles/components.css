@@ -41,26 +41,26 @@
     transform: translateY(-1px);
 }
 
-/* 颜色变体 - 纯色背景 */
+/* 颜色变体 - 纯色背景 (更新颜色变量) */
 .btn-pink {
-    background-color: var(--neon-pink);
+    background-color: var(--barbie-pink);
 }
 .btn-pink::before {
-    box-shadow: var(--glow-pink);
+    box-shadow: var(--glow-effect-pink);
 }
 
 .btn-purple {
     background-color: var(--neon-purple);
 }
 .btn-purple::before {
-    box-shadow: var(--glow-purple);
+    box-shadow: var(--glow-effect-purple);
 }
 
 .btn-blue {
     background-color: var(--neon-blue);
 }
 .btn-blue::before {
-    box-shadow: var(--glow-blue);
+    box-shadow: var(--glow-effect-blue);
 }
 
 .btn-yellow {
@@ -68,7 +68,7 @@
     color: black;
 }
 .btn-yellow::before {
-    box-shadow: var(--glow-yellow);
+    box-shadow: var(--glow-effect-yellow);
 }
 
 .btn-green {
@@ -76,14 +76,14 @@
     color: black;
 }
 .btn-green::before {
-    box-shadow: var(--glow-green);
+    box-shadow: 0 0 15px rgba(152, 251, 152, 0.5);
 }
 
 .btn-orange {
     background-color: var(--neon-orange);
 }
 .btn-orange::before {
-    box-shadow: var(--glow-orange);
+    box-shadow: var(--glow-effect-orange);
 }
 
 /* 卡片样式 */
@@ -119,7 +119,7 @@
     width: 40px;
     height: 40px;
     border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: var(--neon-pink);
+    border-top-color: var(--barbie-pink);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
