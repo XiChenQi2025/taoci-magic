@@ -5,7 +5,7 @@
     position: sticky;
     top: 0;
     z-index: 1000;
-    background: rgba(0, 0, 0, 0.95); /* 改为不透明背景 */
+    background: inherit; /* 改为继承背景 */
     border-bottom: 2px solid;
     border-image: var(--rainbow-gradient) 1;
     padding: 1rem 2rem;
@@ -69,7 +69,7 @@
 .nav-link.blue { background-color: var(--neon-blue); border-color: var(--neon-blue); color: white; }
 .nav-link.purple { background-color: var(--neon-purple); border-color: var(--neon-purple); color: white; }
 .nav-link.yellow { background-color: var(--neon-yellow); border-color: var(--neon-yellow); color: black; }
-.nav-link.green { background-color: var(--neon-green); border-color: var(--neon-green); color: black; }
+.nav-link.orange { background-color: var(--neon-orange); border-color: var(--neon-orange); color: black; }
 
 .nav-link:hover {
     transform: translateY(-2px);
@@ -154,7 +154,7 @@
 .mobile-menu .nav-link.blue { background-color: var(--neon-blue); }
 .mobile-menu .nav-link.purple { background-color: var(--neon-purple); }
 .mobile-menu .nav-link.yellow { background-color: var(--neon-yellow); }
-.mobile-menu .nav-link.green { background-color: var(--neon-green); }
+.mobile-menu .nav-link.orange { background-color: var(--neon-orange); }
 
 /* 主要内容区 */
 #main-content {
@@ -169,7 +169,7 @@
     padding: 2rem;
     text-align: center;
     position: relative;
-    background: rgba(0, 0, 0, 0.95); /* 改为不透明背景 */
+    background: inherit; /* 改为继承背景 */
     border-top: 2px solid;
     border-image: var(--rainbow-gradient) 1;
 }
