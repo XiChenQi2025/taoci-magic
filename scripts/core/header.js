@@ -90,7 +90,7 @@ export default class Header {
         if (navColor.includes('blue')) return 'blue';
         if (navColor.includes('purple')) return 'purple';
         if (navColor.includes('yellow')) return 'yellow';
-        if (navColor.includes('green')) return 'green';
+        if (navColor.includes('orange')) return 'orange';
         return '';
     }
     

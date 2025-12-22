@@ -2,11 +2,11 @@
 class App {
     constructor() {
         this.routes = [
-            { path: '/', name: '首页', module: 'home', navColor: 'var(--neon-pink)', emoji: '🏠' },
-            { path: '/games', name: '小游戏', module: 'games', navColor: 'var(--neon-blue)', emoji: '🎮' },
-            { path: '/answer-book', name: '答案之书', module: 'answer-book', navColor: 'var(--neon-purple)', emoji: '📖' },
-            { path: '/fortune', name: '盲盒运势', module: 'fortune', navColor: 'var(--neon-yellow)', emoji: '🔮' },
-            { path: '/message-board', name: '留言角', module: 'message-board', navColor: 'var(--neon-green)', emoji: '📝' }
+            { path: '/', name: '魔能核心', module: 'home', navColor: 'var(--neon-pink)', emoji: '🏠' },
+            { path: '/games', name: '幻游玩界', module: 'games', navColor: 'var(--neon-blue)', emoji: '🎮' },
+            { path: '/answer-book', name: '秘典回响', module: 'answer-book', navColor: 'var(--neon-purple)', emoji: '📖' },
+            { path: '/fortune', name: '命运盲盒', module: 'fortune', navColor: 'var(--neon-yellow)', emoji: '🔮' },
+            { path: '/message-board', name: '心声回廊', module: 'message-board', navColor: 'var(--neon-orange)', emoji: '📝' }
         ];
         
         this.currentModule = null;
