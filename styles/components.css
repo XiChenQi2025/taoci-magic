@@ -1,21 +1,21 @@
-/* ==================== 按钮组件（周年庆主题） ==================== */
+/* ==================== 按钮组件（简约高级主题） ==================== */
 
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-md) var(--spacing-xl);
-    border-radius: 25px;
-    font-size: var(--font-size-base);
-    font-weight: bold;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 500;
     text-decoration: none;
     cursor: pointer;
     transition: var(--transition);
-    border: 2px solid rgba(255, 255, 255, 0.8);
+    border: none;
     outline: none;
     position: relative;
     overflow: hidden;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+    letter-spacing: 0.5px;
 }
 
 .btn::after {
@@ -27,7 +27,7 @@
     height: 100%;
     background: linear-gradient(90deg, 
         transparent, 
-        rgba(255, 255, 255, 0.3), 
+        rgba(255, 255, 255, 0.2), 
         transparent);
     transform: translateX(-100%);
     transition: transform 0.6s ease;
@@ -37,133 +37,179 @@
     transform: translateX(100%);
 }
 
-/* 荧光粉色按钮 */
+/* 主色按钮 */
 .btn-primary {
-    background: rgba(255, 110, 255, 0.95);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
     box-shadow: 
-        0 0 20px rgba(255, 110, 255, 0.7),
-        inset 0 0 15px rgba(255, 255, 255, 0.3);
+        0 4px 15px rgba(179, 157, 219, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
 }
 
 .btn-primary:hover {
-    background: rgba(255, 130, 255, 0.95);
+    transform: translateY(-2px);
     box-shadow: 
-        0 0 30px rgba(255, 110, 255, 0.9),
-        inset 0 0 20px rgba(255, 255, 255, 0.5);
-    transform: translateY(-3px) scale(1.05);
+        0 8px 25px rgba(179, 157, 219, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
 }
 
-/* 荧光蓝色按钮 */
-.btn-blue {
-    background: rgba(94, 209, 255, 0.95);
+/* 粉色按钮 */
+.btn-pink {
+    background: linear-gradient(135deg, var(--secondary), #F06292);
     color: white;
     box-shadow: 
-        0 0 20px rgba(94, 209, 255, 0.7),
-        inset 0 0 15px rgba(255, 255, 255, 0.3);
+        0 4px 15px rgba(244, 143, 177, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.btn-pink:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 8px 25px rgba(244, 143, 177, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+}
+
+/* 蓝色按钮 */
+.btn-blue {
+    background: linear-gradient(135deg, var(--blue), #64B5F6);
+    color: white;
+    box-shadow: 
+        0 4px 15px rgba(144, 202, 249, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
 }
 
 .btn-blue:hover {
-    background: rgba(114, 229, 255, 0.95);
+    transform: translateY(-2px);
     box-shadow: 
-        0 0 30px rgba(94, 209, 255, 0.9),
-        inset 0 0 20px rgba(255, 255, 255, 0.5);
-    transform: translateY(-3px) scale(1.05);
+        0 8px 25px rgba(144, 202, 249, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
 }
 
-/* 荧光紫色按钮 */
+/* 紫色按钮 */
 .btn-purple {
-    background: rgba(178, 110, 255, 0.95);
+    background: linear-gradient(135deg, var(--purple), #BA68C8);
     color: white;
     box-shadow: 
-        0 0 20px rgba(178, 110, 255, 0.7),
-        inset 0 0 15px rgba(255, 255, 255, 0.3);
+        0 4px 15px rgba(206, 147, 216, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
 }
 
 .btn-purple:hover {
-    background: rgba(198, 130, 255, 0.95);
+    transform: translateY(-2px);
     box-shadow: 
-        0 0 30px rgba(178, 110, 255, 0.9),
-        inset 0 0 20px rgba(255, 255, 255, 0.5);
-    transform: translateY(-3px) scale(1.05);
+        0 8px 25px rgba(206, 147, 216, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
 }
 
-/* 荧光黄色按钮 */
+/* 黄色按钮 */
 .btn-yellow {
-    background: rgba(255, 238, 88, 0.95);
-    color: #333;
+    background: linear-gradient(135deg, var(--yellow), #FFF176);
+    color: #424242;
     box-shadow: 
-        0 0 20px rgba(255, 238, 88, 0.7),
-        inset 0 0 15px rgba(255, 255, 255, 0.5);
+        0 4px 15px rgba(255, 245, 157, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
 }
 
 .btn-yellow:hover {
-    background: rgba(255, 248, 108, 0.95);
+    transform: translateY(-2px);
     box-shadow: 
-        0 0 30px rgba(255, 238, 88, 0.9),
-        inset 0 0 20px rgba(255, 255, 255, 0.7);
-    transform: translateY(-3px) scale(1.05);
+        0 8px 25px rgba(255, 245, 157, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
 }
 
-/* 荧光橙色按钮 */
+/* 橙色按钮 */
 .btn-orange {
-    background: rgba(255, 167, 94, 0.95);
+    background: linear-gradient(135deg, var(--orange), #FFB74D);
     color: white;
     box-shadow: 
-        0 0 20px rgba(255, 167, 94, 0.7),
-        inset 0 0 15px rgba(255, 255, 255, 0.3);
+        0 4px 15px rgba(255, 204, 128, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
 }
 
 .btn-orange:hover {
-    background: rgba(255, 187, 114, 0.95);
+    transform: translateY(-2px);
     box-shadow: 
-        0 0 30px rgba(255, 167, 94, 0.9),
-        inset 0 0 20px rgba(255, 255, 255, 0.5);
-    transform: translateY(-3px) scale(1.05);
+        0 8px 25px rgba(255, 204, 128, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
 }
 
 /* 彩虹渐变按钮 */
 .btn-rainbow {
     background: var(--rainbow);
     color: white;
-    border: 2px solid rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.9);
     box-shadow: 
-        0 0 20px rgba(255, 110, 255, 0.7),
-        0 0 30px rgba(255, 110, 255, 0.5);
-    animation: rainbow-glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes rainbow-glow {
-    0% {
-        box-shadow: 
-            0 0 20px rgba(255, 110, 255, 0.7),
-            0 0 30px rgba(255, 110, 255, 0.5);
-    }
-    100% {
-        box-shadow: 
-            0 0 25px rgba(255, 110, 255, 0.9),
-            0 0 35px rgba(255, 110, 255, 0.7),
-            0 0 45px rgba(255, 110, 255, 0.5);
-    }
+        0 4px 15px rgba(179, 157, 219, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    animation: soft-glow 3s ease-in-out infinite;
 }
 
 .btn-rainbow:hover {
-    animation: rainbow-glow-fast 1s ease-in-out infinite alternate;
-    transform: translateY(-3px) scale(1.05);
+    transform: translateY(-2px);
+    box-shadow: 
+        0 8px 25px rgba(179, 157, 219, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+    animation: soft-glow 2s ease-in-out infinite;
 }
 
-@keyframes rainbow-glow-fast {
-    0% {
-        box-shadow: 
-            0 0 25px rgba(255, 110, 255, 0.9),
-            0 0 35px rgba(255, 110, 255, 0.7),
-            0 0 45px rgba(255, 110, 255, 0.5);
-    }
-    100% {
-        box-shadow: 
-            0 0 30px rgba(255, 110, 255, 1),
-            0 0 40px rgba(255, 110, 255, 0.8),
-            0 0 50px rgba(255, 110, 255, 0.6),
-            0 0 60px rgba(255, 110, 255, 0.4);
-    }
+/* ==================== 卡片组件 ==================== */
+.card {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 
+        var(--shadow-md),
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    transition: var(--transition);
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 
+        var(--shadow-lg),
+        0 0 20px rgba(179, 157, 219, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #424242;
+    background: linear-gradient(135deg, var(--primary), var(--purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.card-content {
+    color: #757575;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+/* ==================== 通用工具类 ==================== */
+.mt-1 { margin-top: 1rem; }
+.mt-2 { margin-top: 2rem; }
+.mb-1 { margin-bottom: 1rem; }
+.mb-2 { margin-bottom: 2rem; }
+
+.text-center { text-align: center; }
+.text-muted { color: #9E9E9E; }
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(179, 157, 219, 0.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }

@@ -1,49 +1,46 @@
-/* 核心变量定义与重置样式 */
+/* 核心变量定义与重置样式 - 简约高级主题 */
 :root {
-    /* 芭比粉系列 + 泛光感 */
-    --barbie-pink: #FF69B4;
-    --barbie-pink-light: #FFB6C1;
-    --barbie-pink-deep: #DB7093;
-    --glow-pink: rgba(255, 105, 180, 0.8);
-    --glow-pink-light: rgba(255, 182, 193, 0.6);
+    /* 主色调：柔和渐变系 */
+    --primary: #B39DDB;
+    --primary-light: #D1C4E9;
+    --primary-dark: #9575CD;
     
-    /* 辅助荧光色 - 调整为更柔和的泛光色 */
-    --neon-purple: #C71585;
-    --neon-blue: #87CEEB;
-    --neon-yellow: #FFD700;
-    --neon-green: #98FB98;
-    --neon-orange: #FFA07A;
+    /* 辅助色：低饱和度 */
+    --secondary: #F48FB1;
+    --accent: #80CBC4;
+    --highlight: #FFCC80;
     
-    /* 泛光效果 - 多层发光模拟丁达尔效应 */
-    --glow-effect-pink: 
-        0 0 15px rgba(255, 105, 180, 0.5),
-        0 0 30px rgba(255, 105, 180, 0.3),
-        0 0 45px rgba(255, 182, 193, 0.2),
-        0 0 60px rgba(255, 182, 193, 0.1);
+    --purple: #CE93D8;
+    --blue: #90CAF9;
+    --green: #A5D6A7;
+    --yellow: #FFF59D;
+    --orange: #FFCC80;
+    --red: #EF9A9A;
     
-    --glow-effect-purple: 
-        0 0 15px rgba(199, 21, 133, 0.5),
-        0 0 30px rgba(199, 21, 133, 0.3);
+    /* 彩虹渐变（柔化版） */
+    --rainbow: linear-gradient(135deg, 
+        #B39DDB 0%,     /* 浅紫 */
+        #F48FB1 25%,    /* 浅粉 */
+        #FFCC80 50%,    /* 浅橙 */
+        #A5D6A7 75%,    /* 浅绿 */
+        #90CAF9 100%    /* 浅蓝 */
+    );
     
-    --glow-effect-blue: 
-        0 0 15px rgba(135, 206, 235, 0.5),
-        0 0 30px rgba(135, 206, 235, 0.3);
+    /* 卡片和容器 */
+    --card-bg: rgba(255, 255, 255, 0.92);
+    --card-border: rgba(255, 255, 255, 0.2);
     
-    --glow-effect-yellow: 
-        0 0 15px rgba(255, 215, 0, 0.5),
-        0 0 30px rgba(255, 215, 0, 0.3);
+    /* 阴影效果（更柔和） */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.03);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 20px rgba(179, 157, 219, 0.15);
     
-    --glow-effect-orange: 
-        0 0 15px rgba(255, 160, 122, 0.5),
-        0 0 30px rgba(255, 160, 122, 0.3);
-    
-    --rainbow-gradient: linear-gradient(90deg, 
-        var(--barbie-pink), 
-        var(--neon-purple), 
-        var(--neon-blue), 
-        var(--neon-green), 
-        var(--neon-yellow),
-        var(--neon-orange));
+    /* 其他变量保持不变 */
+    --border-radius: 16px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* 重置样式 */
@@ -54,43 +51,39 @@
 }
 
 body {
-    background-color: transparent;
-    color: inherit;
-    font-family: 'Segoe UI', 'Microsoft YaHei', 'SimHei', Arial, sans-serif;
+    background: linear-gradient(135deg, 
+        #FAFAFA 0%, 
+        #F5F5F5 50%, 
+        #EEEEEE 100%
+    );
+    background-image: 
+        radial-gradient(circle at 20% 30%, rgba(179, 157, 219, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(244, 143, 177, 0.03) 0%, transparent 50%);
+    color: #424242;
+    font-family: var(--font-family);
     min-height: 100vh;
     overflow-x: hidden;
-    backdrop-filter: blur(10px);
-    background: 
-        radial-gradient(
-            circle at 20% 30%,
-            rgba(255, 105, 180, 0.15) 0%,
-            transparent 60%
-        ),
-        radial-gradient(
-            circle at 80% 70%,
-            rgba(135, 206, 235, 0.15) 0%,
-            transparent 60%
-        ),
-        radial-gradient(
-            circle at 40% 80%,
-            rgba(255, 215, 0, 0.1) 0%,
-            transparent 50%
-        );
 }
 
-/* 泛光呼吸动画 */
-@keyframes glow-pulse {
+/* 淡入淡出动画 */
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 柔光呼吸动画 */
+@keyframes soft-glow {
     0%, 100% { 
-        opacity: 0.6;
-        filter: drop-shadow(0 0 5px var(--glow-pink-light));
+        opacity: 0.8;
+        box-shadow: 0 0 10px rgba(179, 157, 219, 0.2);
     }
     50% { 
         opacity: 1;
-        filter: drop-shadow(0 0 20px var(--glow-pink));
+        box-shadow: 0 0 20px rgba(179, 157, 219, 0.3);
     }
 }
 
-/* 浅色模糊背景层 - 增强泛光感 */
+/* 简约背景层 */
 .background-overlay {
     position: fixed;
     top: 0;
@@ -100,15 +93,29 @@ body {
     z-index: -1;
     pointer-events: none;
     background: 
-        radial-gradient(
-            circle at 20% 30%,
-            rgba(255, 105, 180, 0.08) 0%,
-            transparent 60%
-        ),
-        radial-gradient(
-            circle at 80% 70%,
-            rgba(135, 206, 235, 0.08) 0%,
-            transparent 60%
-        );
-    filter: blur(30px) brightness(1.2);
+        radial-gradient(circle at 20% 30%, rgba(179, 157, 219, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(244, 143, 177, 0.02) 0%, transparent 50%);
+    filter: blur(20px);
+    opacity: 0.5;
+}
+
+/* 自定义滚动条优化 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
 }
