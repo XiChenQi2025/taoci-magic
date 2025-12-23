@@ -3,7 +3,7 @@ class App {
     constructor() {
         // 更新模块名称，使其更贴合网站设计理念
         this.routes = [
-            { path: '/', name: '精灵圣殿', module: 'home', navColor: 'var(--barbie-pink)', emoji: '🏰' },
+            { path: '/home', name: '精灵圣殿', module: 'home', navColor: 'var(--barbie-pink)', emoji: '🏰' },
             { path: '/games', name: '幻游玩界', module: 'games', navColor: 'var(--neon-blue)', emoji: '🎮' },
             { path: '/answer-book', name: '魔法秘典', module: 'answer-book', navColor: 'var(--neon-purple)', emoji: '📚' },
             { path: '/fortune', name: '命运轮盘', module: 'fortune', navColor: 'var(--neon-yellow)', emoji: '🎡' },
