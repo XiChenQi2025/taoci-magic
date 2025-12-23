@@ -1,9 +1,124 @@
 // 首页模块主类
-import { homeConfig } from './home-config.js';
-
 export default class HomeModule {
     constructor() {
-        this.config = homeConfig;
+        // 动态皮套图配置
+        this.characterImages = [
+            { 
+                id: 1, 
+                url: './assets/home/character-1.jpg', 
+                alt: '桃汽水-日常服', 
+                credit: '画师：桃之梦',
+                mainColor: '#FF00FF'
+            },
+            { 
+                id: 2, 
+                url: './assets/home/character-2.jpg', 
+                alt: '桃汽水-庆典服', 
+                credit: '画师：甜汽水',
+                mainColor: '#BF00FF'
+            },
+            { 
+                id: 3, 
+                url: './assets/home/character-3.jpg', 
+                alt: '桃汽水-魔力觉醒', 
+                credit: '画师：星之绘',
+                mainColor: '#00BFFF'
+            },
+            { 
+                id: 4, 
+                url: './assets/home/character-4.jpg', 
+                alt: '桃汽水-星空漫步', 
+                credit: '画师：幻月',
+                mainColor: '#00FF00'
+            },
+            { 
+                id: 5, 
+                url: './assets/home/character-5.jpg', 
+                alt: '桃汽水-夏日限定', 
+                credit: '画师：夏日冰',
+                mainColor: '#FFFF00'
+            }
+        ];
+        
+        // 主播留言配置
+        this.streamerMessages = [
+            {
+                id: 1,
+                text: '感谢大家一直以来的支持！每次看到你们的弹幕和留言，都是我最大的动力～',
+                date: '2024-03-15',
+                emoji: '❤️'
+            },
+            {
+                id: 2,
+                text: '最近在练习新的歌曲，希望能在下一次直播给大家带来惊喜！',
+                date: '2024-03-10',
+                emoji: '🎵'
+            },
+            {
+                id: 3,
+                text: '12-24周年庆即将到来，准备了好多特别节目和福利，一定要来哦！',
+                date: '2024-03-05',
+                emoji: '🎉'
+            },
+            {
+                id: 4,
+                text: '天气转凉啦，各位小桃子们记得添衣保暖，不要生病哦～',
+                date: '2024-02-28',
+                emoji: '☕'
+            },
+            {
+                id: 5,
+                text: '新衣服正在制作中！是大家投票选出的星空主题，超期待的！',
+                date: '2024-02-20',
+                emoji: '✨'
+            }
+        ];
+        
+        // 周年庆活动配置
+        this.anniversaryEvents = {
+            title: '🎉 12-24周年狂欢庆典 🎉',
+            countdownTo: '2024-06-01T20:00:00',
+            highlights: [
+                {
+                    icon: '🎤',
+                    text: '限定纪念直播 - 独家新曲首发'
+                },
+                {
+                    icon: '🎁',
+                    text: '特别福利抽奖 - 签名周边放送'
+                },
+                {
+                    icon: '👗',
+                    text: '新衣装发布 - 星空主题限定'
+                },
+                {
+                    icon: '🎮',
+                    text: '互动游戏夜 - 与主播一起玩'
+                }
+            ],
+            schedule: [
+                { time: '20:00', event: '周年庆开场 & 新曲发布' },
+                { time: '20:30', event: '新衣装展示 & 幕后故事' },
+                { time: '21:00', event: '互动游戏环节' },
+                { time: '21:30', event: '福利抽奖时间' },
+                { time: '22:00', event: '粉丝感谢时间' }
+            ]
+        };
+        
+        // 弹幕消息配置
+        this.barrageMessages = [
+            '桃汽水最棒！',
+            '生日快乐！',
+            '新衣服好美～',
+            '永远支持你！',
+            '歌声太治愈了',
+            '期待周年庆！',
+            '魔力补给站',
+            '桃桃放心飞',
+            '桃子永相随',
+            '直播加油！'
+        ];
+        
         this.currentImageIndex = -1;
         this.currentMessageIndex = 0;
         this.isAutoPlaying = true;
@@ -80,21 +195,431 @@ export default class HomeModule {
     }
 
     injectStyles() {
-        // 创建style标签并插入CSS
+        // 检查是否已加载过样式
+        if (document.getElementById('home-module-styles')) {
+            return;
+        }
+        
+        // 直接内联注入CSS内容，避免路径问题
         const style = document.createElement('style');
         style.id = 'home-module-styles';
-        style.textContent = document.querySelector('#home-module-styles') ? '' : `
-            /* 这里应该是home-styles.css的内容 */
-            /* 由于CSS内容较长，我们在外部文件中定义 */
-        `;
-        document.head.appendChild(style);
         
-        // 动态加载外部CSS文件
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = '../../../styles/modules/home-styles.css';
-        link.id = 'home-module-styles-external';
-        document.head.appendChild(link);
+        style.textContent = `
+            /* 首页模块特有样式 - 内联注入避免路径问题 */
+            
+            /* 动态皮套图容器 */
+            .character-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                z-index: 5;
+                pointer-events: none;
+            }
+            
+            .character-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0;
+                transition: opacity 0.8s ease;
+            }
+            
+            .character-image.loaded {
+                opacity: 1;
+            }
+            
+            .character-mask {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(
+                    circle at 30% 50%,
+                    transparent 20%,
+                    rgba(10, 10, 10, 0.4) 70%
+                );
+                z-index: 1;
+            }
+            
+            .character-credit {
+                position: absolute;
+                bottom: 20px;
+                right: 20px;
+                background: rgba(0, 0, 0, 0.5);
+                color: rgba(255, 255, 255, 0.7);
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-size: 0.8rem;
+                z-index: 2;
+            }
+            
+            /* 内容悬浮层 */
+            .home-content-layer {
+                position: relative;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 20;
+                padding: 2rem;
+            }
+            
+            /* 顶部留空区域 */
+            .home-top-space {
+                height: 20vh;
+                width: 100%;
+            }
+            
+            /* 中间内容区 */
+            .home-middle-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 90%;
+                max-width: 1400px;
+                height: 60vh;
+                gap: 2rem;
+            }
+            
+            /* 底部留空区域 */
+            .home-bottom-space {
+                height: 20vh;
+                width: 100%;
+            }
+            
+            /* 公告板卡片 */
+            .announcement-card {
+                background: var(--card-bg);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                border: 3px solid rgba(255, 255, 255, 0.95);
+                border-radius: 20px;
+                padding: 2rem;
+                width: 45%;
+                min-height: 400px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1),
+                            0 0 20px rgba(255, 255, 157, 0.3);
+                border-top: 4px solid;
+                border-image: var(--rainbow) 1;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .announcement-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: var(--rainbow);
+                border-radius: 20px 20px 0 0;
+            }
+            
+            .announcement-title {
+                font-size: 1.8rem;
+                color: var(--yellow);
+                text-align: center;
+                margin-bottom: 1.5rem;
+                font-weight: bold;
+                text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+                animation: blink 2s infinite;
+            }
+            
+            @keyframes blink {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.7; }
+            }
+            
+            .countdown-display {
+                font-size: 1.4rem;
+                color: var(--orange);
+                text-align: center;
+                margin: 1rem 0;
+                padding: 0.8rem;
+                background: rgba(255, 165, 0, 0.1);
+                border-radius: 10px;
+                border: 1px solid rgba(255, 165, 0, 0.3);
+            }
+            
+            .highlights-list {
+                list-style: none;
+                padding: 1rem 0;
+            }
+            
+            .highlights-list li {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                margin: 0.8rem 0;
+                font-size: 1.1rem;
+            }
+            
+            .highlight-icon {
+                font-size: 1.5rem;
+                width: 40px;
+                text-align: center;
+            }
+            
+            .schedule-btn {
+                display: block;
+                margin: 1.5rem auto;
+                padding: 0.8rem 1.5rem;
+                background: linear-gradient(135deg, var(--yellow), #FFF176);
+                color: #333;
+                border: none;
+                border-radius: 25px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 3px solid rgba(255, 255, 255, 0.95);
+            }
+            
+            .schedule-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 30px rgba(255, 245, 157, 0.4),
+                            0 0 0 3px rgba(255, 255, 255, 0.95) inset;
+            }
+            
+            .schedule-panel {
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 10px;
+                padding: 1.5rem;
+                margin-top: 1rem;
+                display: none;
+                animation: slideDown 0.3s ease-out;
+            }
+            
+            @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .schedule-panel.active {
+                display: block;
+            }
+            
+            .schedule-item {
+                display: flex;
+                align-items: center;
+                padding: 0.8rem;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            }
+            
+            .schedule-time {
+                font-weight: bold;
+                color: var(--purple);
+                width: 80px;
+            }
+            
+            .subscribe-btn {
+                width: 100%;
+                margin-top: 1.5rem;
+                padding: 1rem;
+                font-size: 1.1rem;
+            }
+            
+            /* 留言墙卡片 */
+            .message-card {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                border-radius: 20px;
+                padding: 2rem;
+                width: 45%;
+                min-height: 400px;
+                position: relative;
+                border: 3px solid var(--primary);
+                box-shadow: 0 10px 30px rgba(179, 157, 219, 0.3);
+            }
+            
+            .streamer-avatar {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid var(--primary);
+                box-shadow: 0 0 20px rgba(179, 157, 219, 0.3);
+                margin-bottom: 1rem;
+            }
+            
+            .message-content {
+                font-size: 1.2rem;
+                line-height: 1.6;
+                color: #333;
+                min-height: 150px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            .message-meta {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 1.5rem;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(179, 157, 219, 0.2);
+            }
+            
+            .message-date {
+                color: #666;
+                font-size: 0.9rem;
+            }
+            
+            .message-controls {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+            }
+            
+            .control-btn {
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: var(--primary);
+                transition: all 0.3s ease;
+                padding: 0.5rem;
+                border-radius: 50%;
+            }
+            
+            .control-btn:hover {
+                background: rgba(179, 157, 219, 0.1);
+                transform: scale(1.1);
+            }
+            
+            .like-btn {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                background: rgba(179, 157, 219, 0.1);
+                border: none;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                color: var(--primary);
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .like-btn:hover {
+                background: rgba(179, 157, 219, 0.2);
+                transform: translateY(-2px);
+            }
+            
+            .like-btn.liked {
+                background: var(--primary);
+                color: white;
+            }
+            
+            .message-counter {
+                font-size: 0.9rem;
+                color: #666;
+                text-align: center;
+                margin-top: 1rem;
+            }
+            
+            /* 弹幕系统 */
+            .barrage-container {
+                position: fixed;
+                bottom: 10%;
+                left: 0;
+                width: 100%;
+                height: 40%;
+                z-index: 50;
+                pointer-events: none;
+                overflow: hidden;
+            }
+            
+            .barrage-item {
+                position: absolute;
+                white-space: nowrap;
+                font-size: 1rem;
+                opacity: 0.8;
+                pointer-events: auto;
+                cursor: pointer;
+                transition: opacity 0.3s ease;
+                text-shadow: 0 0 5px currentColor;
+            }
+            
+            .barrage-item:hover {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+            
+            /* 粒子系统 */
+            .particle-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 40;
+                pointer-events: none;
+            }
+            
+            .particle {
+                position: absolute;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                pointer-events: none;
+            }
+            
+            /* 响应式设计 */
+            @media (max-width: 1200px) {
+                .home-middle-content {
+                    flex-direction: column;
+                    justify-content: center;
+                    gap: 3rem;
+                    height: auto;
+                }
+                
+                .announcement-card,
+                .message-card {
+                    width: 90%;
+                    max-width: 600px;
+                }
+            }
+            
+            @media (max-width: 768px) {
+                .home-content-layer {
+                    padding: 1rem;
+                }
+                
+                .character-image {
+                    object-fit: contain;
+                }
+                
+                .announcement-title {
+                    font-size: 1.5rem;
+                }
+                
+                .message-content {
+                    font-size: 1.1rem;
+                }
+                
+                .barrage-container {
+                    display: none; /* 移动端关闭弹幕保证性能 */
+                }
+                
+                .particle-container {
+                    display: none; /* 移动端关闭粒子效果 */
+                }
+            }
+        `;
+        
+        document.head.appendChild(style);
     }
 
     render(container) {
@@ -135,10 +660,10 @@ export default class HomeModule {
                     
                     <!-- 公告板卡片 -->
                     <div class="announcement-card">
-                        <h2 class="announcement-title">${this.config.anniversaryEvents.title}</h2>
+                        <h2 class="announcement-title">${this.anniversaryEvents.title}</h2>
                         <div class="countdown-display"></div>
                         <ul class="highlights-list">
-                            ${this.config.anniversaryEvents.highlights.map(item => `
+                            ${this.anniversaryEvents.highlights.map(item => `
                                 <li>
                                     <span class="highlight-icon">${item.icon}</span>
                                     <span>${item.text}</span>
@@ -147,7 +672,7 @@ export default class HomeModule {
                         </ul>
                         <button class="schedule-btn">查看详细日程</button>
                         <div class="schedule-panel">
-                            ${this.config.anniversaryEvents.schedule.map(item => `
+                            ${this.anniversaryEvents.schedule.map(item => `
                                 <div class="schedule-item">
                                     <div class="schedule-time">${item.time}</div>
                                     <div>${item.event}</div>
@@ -190,7 +715,7 @@ export default class HomeModule {
     }
 
     async initImageGallery() {
-        const images = this.config.characterImages;
+        const images = this.characterImages;
         
         // 防重复逻辑：如果上次有记录，尝试选不同的图片
         let availableIndices = images.map((_, index) => index);
@@ -249,7 +774,7 @@ export default class HomeModule {
         this.timers.push(setInterval(() => this.updateCountdown(), 1000));
         
         // 计算距离周年庆的天数
-        const targetDate = new Date(this.config.anniversaryEvents.countdownTo);
+        const targetDate = new Date(this.anniversaryEvents.countdownTo);
         const today = new Date();
         const diffTime = targetDate - today;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -262,7 +787,7 @@ export default class HomeModule {
     }
 
     updateCountdown() {
-        const targetDate = new Date(this.config.anniversaryEvents.countdownTo);
+        const targetDate = new Date(this.anniversaryEvents.countdownTo);
         const now = new Date();
         
         const diffMs = targetDate - now;
@@ -300,7 +825,7 @@ export default class HomeModule {
     }
 
     showMessage(index) {
-        const messages = this.config.streamerMessages;
+        const messages = this.streamerMessages;
         if (messages.length === 0) return;
         
         // 循环索引
@@ -381,7 +906,7 @@ export default class HomeModule {
     initBarrageSystem() {
         // 创建弹幕
         const createBarrage = () => {
-            const messages = this.config.barrageMessages;
+            const messages = this.barrageMessages;
             const text = messages[Math.floor(Math.random() * messages.length)];
             
             const barrage = document.createElement('div');
@@ -442,7 +967,7 @@ export default class HomeModule {
 
     initParticleSystem() {
         // 根据当前皮套图的主色调设置粒子颜色
-        const currentImage = this.config.characterImages[this.currentImageIndex];
+        const currentImage = this.characterImages[this.currentImageIndex];
         const mainColor = currentImage?.mainColor || '#FF00FF';
         
         // 鼠标移动时生成粒子
@@ -544,7 +1069,7 @@ export default class HomeModule {
         this.pauseBtn.addEventListener('click', () => this.toggleAutoPlay());
         
         this.likeBtn.addEventListener('click', () => {
-            const currentMessage = this.config.streamerMessages[this.currentMessageIndex];
+            const currentMessage = this.streamerMessages[this.currentMessageIndex];
             const isLiked = this.likedMessages.has(currentMessage.id);
             
             if (isLiked) {
@@ -582,7 +1107,6 @@ export default class HomeModule {
         
         this.subscribeBtn.addEventListener('click', () => {
             alert('已订阅直播提醒！周年庆开始前会通过浏览器通知提醒您～');
-            // 实际应用中这里应该调用通知API
         });
         
         // 窗口大小变化时调整效果
