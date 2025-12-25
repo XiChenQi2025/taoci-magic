@@ -1,1133 +1,977 @@
 // 首页模块主类
+import config from './home-config.js';
+
 export default class HomeModule {
     constructor() {
-        // 动态皮套图配置
-        this.characterImages = [
-            { 
-                id: 1, 
-                url: './assets/home/character-1.jpg', 
-                alt: '桃汽水-日常服', 
-                credit: '画师：桃之梦',
-                mainColor: '#FF00FF'
-            },
-            { 
-                id: 2, 
-                url: './assets/home/character-2.jpg', 
-                alt: '桃汽水-庆典服', 
-                credit: '画师：甜汽水',
-                mainColor: '#BF00FF'
-            },
-            { 
-                id: 3, 
-                url: './assets/home/character-3.jpg', 
-                alt: '桃汽水-魔力觉醒', 
-                credit: '画师：星之绘',
-                mainColor: '#00BFFF'
-            },
-            { 
-                id: 4, 
-                url: './assets/home/character-4.jpg', 
-                alt: '桃汽水-星空漫步', 
-                credit: '画师：幻月',
-                mainColor: '#00FF00'
-            },
-            { 
-                id: 5, 
-                url: './assets/home/character-5.jpg', 
-                alt: '桃汽水-夏日限定', 
-                credit: '画师：夏日冰',
-                mainColor: '#FFFF00'
-            }
-        ];
-        
-        // 主播留言配置
-        this.streamerMessages = [
-            {
-                id: 1,
-                text: '感谢大家一直以来的支持！每次看到你们的弹幕和留言，都是我最大的动力～',
-                date: '2024-03-15',
-                emoji: '❤️'
-            },
-            {
-                id: 2,
-                text: '最近在练习新的歌曲，希望能在下一次直播给大家带来惊喜！',
-                date: '2024-03-10',
-                emoji: '🎵'
-            },
-            {
-                id: 3,
-                text: '12-24周年庆即将到来，准备了好多特别节目和福利，一定要来哦！',
-                date: '2024-03-05',
-                emoji: '🎉'
-            },
-            {
-                id: 4,
-                text: '天气转凉啦，各位小桃子们记得添衣保暖，不要生病哦～',
-                date: '2024-02-28',
-                emoji: '☕'
-            },
-            {
-                id: 5,
-                text: '新衣服正在制作中！是大家投票选出的星空主题，超期待的！',
-                date: '2024-02-20',
-                emoji: '✨'
-            }
-        ];
-        
-        // 周年庆活动配置
-        this.anniversaryEvents = {
-            title: '🎉 12-24周年狂欢庆典 🎉',
-            countdownTo: '2024-06-01T20:00:00',
-            highlights: [
-                {
-                    icon: '🎤',
-                    text: '限定纪念直播 - 独家新曲首发'
-                },
-                {
-                    icon: '🎁',
-                    text: '特别福利抽奖 - 签名周边放送'
-                },
-                {
-                    icon: '👗',
-                    text: '新衣装发布 - 星空主题限定'
-                },
-                {
-                    icon: '🎮',
-                    text: '互动游戏夜 - 与主播一起玩'
-                }
-            ],
-            schedule: [
-                { time: '20:00', event: '周年庆开场 & 新曲发布' },
-                { time: '20:30', event: '新衣装展示 & 幕后故事' },
-                { time: '21:00', event: '互动游戏环节' },
-                { time: '21:30', event: '福利抽奖时间' },
-                { time: '22:00', event: '粉丝感谢时间' }
-            ]
-        };
-        
-        // 弹幕消息配置
-        this.barrageMessages = [
-            '桃汽水最棒！',
-            '生日快乐！',
-            '新衣服好美～',
-            '永远支持你！',
-            '歌声太治愈了',
-            '期待周年庆！',
-            '魔力补给站',
-            '桃桃放心飞',
-            '桃子永相随',
-            '直播加油！'
-        ];
-        
-        this.currentImageIndex = -1;
+        this.config = config;
+        this.currentImageIndex = 0;
         this.currentMessageIndex = 0;
         this.isAutoPlaying = true;
-        this.likedMessages = new Set();
-        this.barrageInterval = null;
-        this.particles = [];
         this.timers = [];
+        this.eventListeners = [];
+        this.container = null;
+        this.carouselTimer = null;
         
-        // 尝试获取上次的图片记录
-        const lastImageId = localStorage.getItem('lastCharacterImageId');
-        if (lastImageId) {
-            this.lastImageId = parseInt(lastImageId);
-        }
+        // 粒子效果相关
+        this.particles = [];
+        this.barrages = [];
+        
+        console.log('首页模块初始化完成');
     }
 
     async init(appContainer) {
         try {
-            // 1. 注入模块样式
-            this.injectStyles();
+            // 1. 加载配置
+            await this.loadConfig();
             
-            // 2. 渲染模块结构
+            // 2. 创建样式链接
+            this.loadStyles();
+            
+            // 3. 渲染模块HTML结构到appContainer
             this.render(appContainer);
             
-            // 3. 初始化各子系统
+            // 4. 初始化各子系统
             await this.initImageGallery();
             this.initAnnouncement();
             this.initMessageWall();
-            this.initInteractiveEffects();
             
-            // 4. 绑定事件
+            // 5. 初始化交互效果（只在桌面端）
+            if (window.innerWidth >= 768) {
+                this.initInteractiveEffects();
+            }
+            
+            // 6. 绑定事件
             this.bindEvents();
+            
+            console.log('首页模块加载完成');
+            return this;
             
         } catch (error) {
             console.error('首页模块初始化失败:', error);
-            appContainer.innerHTML = `
-                <div class="card">
-                    <h2 class="card-title">首页加载失败</h2>
-                    <p class="card-content">网络开小差了，请刷新页面重试</p>
-                </div>
-            `;
+            this.showError(appContainer, error);
         }
     }
 
     destroy() {
+        console.log('正在销毁首页模块...');
+        
         // 清理所有定时器
-        this.timers.forEach(timer => clearInterval(timer));
+        this.timers.forEach(timer => {
+            clearInterval(timer);
+            clearTimeout(timer);
+        });
         this.timers = [];
         
-        if (this.barrageInterval) {
-            clearInterval(this.barrageInterval);
-            this.barrageInterval = null;
+        if (this.carouselTimer) {
+            clearInterval(this.carouselTimer);
+            this.carouselTimer = null;
         }
         
-        // 清理粒子动画
-        if (this.particleAnimationFrame) {
-            cancelAnimationFrame(this.particleAnimationFrame);
-        }
+        // 清理动画帧
+        this.particles.forEach(particle => {
+            if (particle.animationId) {
+                cancelAnimationFrame(particle.animationId);
+            }
+        });
         
-        // 移除事件监听
-        if (this.messageCard) {
-            this.messageCard.removeEventListener('mouseenter', this.pauseMessages);
-            this.messageCard.removeEventListener('mouseleave', this.resumeMessages);
+        this.barrages.forEach(barrage => {
+            if (barrage.animationId) {
+                cancelAnimationFrame(barrage.animationId);
+            }
+        });
+        
+        // 移除事件监听器
+        this.eventListeners.forEach(listener => {
+            if (listener.element && listener.handler) {
+                listener.element.removeEventListener(listener.event, listener.handler);
+            }
+        });
+        this.eventListeners = [];
+        
+        // 移除样式
+        const styleLink = document.querySelector('link[href*="home-styles"]');
+        if (styleLink) {
+            styleLink.remove();
         }
         
         // 清理DOM元素
-        const style = document.getElementById('home-module-styles');
-        if (style) style.remove();
+        if (this.container) {
+            this.container.innerHTML = '';
+        }
         
-        const barrage = document.querySelector('.barrage-container');
-        if (barrage) barrage.remove();
-        
-        const particles = document.querySelector('.particle-container');
-        if (particles) particles.remove();
+        console.log('首页模块已销毁');
     }
 
-    injectStyles() {
-        // 检查是否已加载过样式
-        if (document.getElementById('home-module-styles')) {
+    // ==================== 核心方法 ====================
+
+    async loadConfig() {
+        try {
+            // 配置已通过import导入，直接使用
+            if (!this.config) {
+                throw new Error('配置加载失败');
+            }
+            
+            console.log('首页配置加载成功');
+            return this.config;
+            
+        } catch (error) {
+            console.error('加载配置失败:', error);
+            // 使用默认配置
+            this.config = {
+                characterImages: [{ 
+                    id: 1, 
+                    url: '', 
+                    alt: '桃汽水', 
+                    credit: '系统', 
+                    description: '欢迎来到魔力补给站！' 
+                }],
+                announcements: [{ 
+                    id: 1, 
+                    title: '欢迎！', 
+                    content: '这里是桃汽水的魔力补给站～', 
+                    date: new Date().toISOString().split('T')[0], 
+                    type: 'welcome' 
+                }],
+                fanMessages: [{ 
+                    id: 1, 
+                    text: '感谢大家的支持！', 
+                    date: new Date().toISOString().split('T')[0], 
+                    emoji: '💖', 
+                    likes: 0 
+                }],
+                settings: {
+                    messageCarouselInterval: 10,
+                    enableParticles: false,
+                    enableBarrage: false
+                }
+            };
+            return this.config;
+        }
+    }
+    
+    loadStyles() {
+        // 检查是否已经加载了样式
+        const existingStyle = document.querySelector('link[href*="home-styles"]');
+        if (existingStyle) {
             return;
         }
         
-        // 直接内联注入CSS内容，避免路径问题
-        const style = document.createElement('style');
-        style.id = 'home-module-styles';
+        // 创建样式链接
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = './scripts/modules/home/home-styles.css';
+        link.id = 'home-module-styles';
         
-        style.textContent = `
-            /* 首页模块特有样式 - 内联注入避免路径问题 */
-            
-            /* 动态皮套图容器 */
-            .character-container {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                z-index: 5;
-                pointer-events: none;
-            }
-            
-            .character-image {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                opacity: 0;
-                transition: opacity 0.8s ease;
-            }
-            
-            .character-image.loaded {
-                opacity: 1;
-            }
-            
-            .character-mask {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: radial-gradient(
-                    circle at 30% 50%,
-                    transparent 20%,
-                    rgba(10, 10, 10, 0.4) 70%
-                );
-                z-index: 1;
-            }
-            
-            .character-credit {
-                position: absolute;
-                bottom: 20px;
-                right: 20px;
-                background: rgba(0, 0, 0, 0.5);
-                color: rgba(255, 255, 255, 0.7);
-                padding: 4px 12px;
-                border-radius: 12px;
-                font-size: 0.8rem;
-                z-index: 2;
-            }
-            
-            /* 内容悬浮层 */
-            .home-content-layer {
-                position: relative;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                z-index: 20;
-                padding: 2rem;
-            }
-            
-            /* 顶部留空区域 */
-            .home-top-space {
-                height: 20vh;
-                width: 100%;
-            }
-            
-            /* 中间内容区 */
-            .home-middle-content {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                width: 90%;
-                max-width: 1400px;
-                height: 60vh;
-                gap: 2rem;
-            }
-            
-            /* 底部留空区域 */
-            .home-bottom-space {
-                height: 20vh;
-                width: 100%;
-            }
-            
-            /* 公告板卡片 */
-            .announcement-card {
-                background: var(--card-bg);
-                backdrop-filter: blur(15px);
-                -webkit-backdrop-filter: blur(15px);
-                border: 3px solid rgba(255, 255, 255, 0.95);
-                border-radius: 20px;
-                padding: 2rem;
-                width: 45%;
-                min-height: 400px;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1),
-                            0 0 20px rgba(255, 255, 157, 0.3);
-                border-top: 4px solid;
-                border-image: var(--rainbow) 1;
-                position: relative;
-                overflow: hidden;
-            }
-            
-            .announcement-card::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 4px;
-                background: var(--rainbow);
-                border-radius: 20px 20px 0 0;
-            }
-            
-            .announcement-title {
-                font-size: 1.8rem;
-                color: var(--yellow);
-                text-align: center;
-                margin-bottom: 1.5rem;
-                font-weight: bold;
-                text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
-                animation: blink 2s infinite;
-            }
-            
-            @keyframes blink {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.7; }
-            }
-            
-            .countdown-display {
-                font-size: 1.4rem;
-                color: var(--orange);
-                text-align: center;
-                margin: 1rem 0;
-                padding: 0.8rem;
-                background: rgba(255, 165, 0, 0.1);
-                border-radius: 10px;
-                border: 1px solid rgba(255, 165, 0, 0.3);
-            }
-            
-            .highlights-list {
-                list-style: none;
-                padding: 1rem 0;
-            }
-            
-            .highlights-list li {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-                margin: 0.8rem 0;
-                font-size: 1.1rem;
-            }
-            
-            .highlight-icon {
-                font-size: 1.5rem;
-                width: 40px;
-                text-align: center;
-            }
-            
-            .schedule-btn {
-                display: block;
-                margin: 1.5rem auto;
-                padding: 0.8rem 1.5rem;
-                background: linear-gradient(135deg, var(--yellow), #FFF176);
-                color: #333;
-                border: none;
-                border-radius: 25px;
-                font-weight: bold;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                border: 3px solid rgba(255, 255, 255, 0.95);
-            }
-            
-            .schedule-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 10px 30px rgba(255, 245, 157, 0.4),
-                            0 0 0 3px rgba(255, 255, 255, 0.95) inset;
-            }
-            
-            .schedule-panel {
-                background: rgba(255, 255, 255, 0.95);
-                border-radius: 10px;
-                padding: 1.5rem;
-                margin-top: 1rem;
-                display: none;
-                animation: slideDown 0.3s ease-out;
-            }
-            
-            @keyframes slideDown {
-                from {
-                    opacity: 0;
-                    transform: translateY(-10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-            
-            .schedule-panel.active {
-                display: block;
-            }
-            
-            .schedule-item {
-                display: flex;
-                align-items: center;
-                padding: 0.8rem;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            }
-            
-            .schedule-time {
-                font-weight: bold;
-                color: var(--purple);
-                width: 80px;
-            }
-            
-            .subscribe-btn {
-                width: 100%;
-                margin-top: 1.5rem;
-                padding: 1rem;
-                font-size: 1.1rem;
-            }
-            
-            /* 留言墙卡片 */
-            .message-card {
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(15px);
-                -webkit-backdrop-filter: blur(15px);
-                border-radius: 20px;
-                padding: 2rem;
-                width: 45%;
-                min-height: 400px;
-                position: relative;
-                border: 3px solid var(--primary);
-                box-shadow: 0 10px 30px rgba(179, 157, 219, 0.3);
-            }
-            
-            .streamer-avatar {
-                width: 60px;
-                height: 60px;
-                border-radius: 50%;
-                object-fit: cover;
-                border: 2px solid var(--primary);
-                box-shadow: 0 0 20px rgba(179, 157, 219, 0.3);
-                margin-bottom: 1rem;
-            }
-            
-            .message-content {
-                font-size: 1.2rem;
-                line-height: 1.6;
-                color: #333;
-                min-height: 150px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-            }
-            
-            .message-meta {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-top: 1.5rem;
-                padding-top: 1rem;
-                border-top: 1px solid rgba(179, 157, 219, 0.2);
-            }
-            
-            .message-date {
-                color: #666;
-                font-size: 0.9rem;
-            }
-            
-            .message-controls {
-                display: flex;
-                gap: 1rem;
-                align-items: center;
-            }
-            
-            .control-btn {
-                background: none;
-                border: none;
-                font-size: 1.5rem;
-                cursor: pointer;
-                color: var(--primary);
-                transition: all 0.3s ease;
-                padding: 0.5rem;
-                border-radius: 50%;
-            }
-            
-            .control-btn:hover {
-                background: rgba(179, 157, 219, 0.1);
-                transform: scale(1.1);
-            }
-            
-            .like-btn {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                background: rgba(179, 157, 219, 0.1);
-                border: none;
-                padding: 0.5rem 1rem;
-                border-radius: 20px;
-                color: var(--primary);
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-            
-            .like-btn:hover {
-                background: rgba(179, 157, 219, 0.2);
-                transform: translateY(-2px);
-            }
-            
-            .like-btn.liked {
-                background: var(--primary);
-                color: white;
-            }
-            
-            .message-counter {
-                font-size: 0.9rem;
-                color: #666;
-                text-align: center;
-                margin-top: 1rem;
-            }
-            
-            /* 弹幕系统 */
-            .barrage-container {
-                position: fixed;
-                bottom: 10%;
-                left: 0;
-                width: 100%;
-                height: 40%;
-                z-index: 50;
-                pointer-events: none;
-                overflow: hidden;
-            }
-            
-            .barrage-item {
-                position: absolute;
-                white-space: nowrap;
-                font-size: 1rem;
-                opacity: 0.8;
-                pointer-events: auto;
-                cursor: pointer;
-                transition: opacity 0.3s ease;
-                text-shadow: 0 0 5px currentColor;
-            }
-            
-            .barrage-item:hover {
-                opacity: 1;
-                transform: scale(1.1);
-            }
-            
-            /* 粒子系统 */
-            .particle-container {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                z-index: 40;
-                pointer-events: none;
-            }
-            
-            .particle {
-                position: absolute;
-                width: 4px;
-                height: 4px;
-                border-radius: 50%;
-                pointer-events: none;
-            }
-            
-            /* 响应式设计 */
-            @media (max-width: 1200px) {
-                .home-middle-content {
-                    flex-direction: column;
-                    justify-content: center;
-                    gap: 3rem;
-                    height: auto;
-                }
-                
-                .announcement-card,
-                .message-card {
-                    width: 90%;
-                    max-width: 600px;
-                }
-            }
-            
-            @media (max-width: 768px) {
-                .home-content-layer {
-                    padding: 1rem;
-                }
-                
-                .character-image {
-                    object-fit: contain;
-                }
-                
-                .announcement-title {
-                    font-size: 1.5rem;
-                }
-                
-                .message-content {
-                    font-size: 1.1rem;
-                }
-                
-                .barrage-container {
-                    display: none; /* 移动端关闭弹幕保证性能 */
-                }
-                
-                .particle-container {
-                    display: none; /* 移动端关闭粒子效果 */
-                }
-            }
-        `;
+        // 添加到head
+        document.head.appendChild(link);
         
-        document.head.appendChild(style);
+        console.log('首页样式已加载');
     }
 
     render(container) {
-        container.innerHTML = `
-            <!-- 动态皮套图容器 -->
-            <div class="character-container">
-                <div class="character-mask"></div>
-                <img class="character-image" src="" alt="" />
-                <div class="character-credit"></div>
-            </div>
-            
-            <!-- 内容悬浮层 -->
-            <div class="home-content-layer">
-                <div class="home-top-space"></div>
-                
-                <div class="home-middle-content">
-                    <!-- 留言墙卡片 -->
-                    <div class="message-card">
-                        <img class="streamer-avatar" src="./assets/avatar.png" alt="桃汽水头像">
-                        <div class="message-content">
-                            <span class="message-emoji"></span>
-                            <span class="message-text"></span>
-                        </div>
-                        <div class="message-meta">
-                            <div class="message-date"></div>
-                            <div class="message-controls">
-                                <button class="control-btn prev-btn">◀</button>
-                                <button class="control-btn pause-btn">⏸</button>
-                                <button class="control-btn next-btn">▶</button>
-                                <button class="like-btn">
-                                    <span class="like-emoji">❤️</span>
-                                    <span class="like-count">0</span>
-                                </button>
+        this.container = container;
+        
+        const html = `
+            <div id="home-module" class="home-module">
+                <!-- 皮套图展示区 -->
+                <section class="character-section">
+                    <div class="character-container">
+                        <img id="character-image" src="" alt="" class="character-image">
+                        <div class="character-overlay">
+                            <button id="refresh-image" class="btn btn-primary refresh-btn">
+                                <span class="btn-icon">🔄</span> 换一张
+                            </button>
+                            <div id="image-info" class="image-info">
+                                <span class="image-credit"></span>
+                                <span class="image-description"></span>
                             </div>
                         </div>
-                        <div class="message-counter"></div>
                     </div>
-                    
-                    <!-- 公告板卡片 -->
-                    <div class="announcement-card">
-                        <h2 class="announcement-title">${this.anniversaryEvents.title}</h2>
-                        <div class="countdown-display"></div>
-                        <ul class="highlights-list">
-                            ${this.anniversaryEvents.highlights.map(item => `
-                                <li>
-                                    <span class="highlight-icon">${item.icon}</span>
-                                    <span>${item.text}</span>
-                                </li>
-                            `).join('')}
-                        </ul>
-                        <button class="schedule-btn">查看详细日程</button>
-                        <div class="schedule-panel">
-                            ${this.anniversaryEvents.schedule.map(item => `
-                                <div class="schedule-item">
-                                    <div class="schedule-time">${item.time}</div>
-                                    <div>${item.event}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <button class="btn btn-yellow subscribe-btn">点击订阅直播提醒</button>
-                    </div>
-                </div>
+                </section>
                 
-                <div class="home-bottom-space"></div>
+                <!-- 公告板区域 -->
+                <section class="announcement-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <span class="title-icon">📢</span> 最新公告
+                        </h2>
+                    </div>
+                    <div id="announcement-board" class="announcement-board card">
+                        <!-- 公告内容由JS动态生成 -->
+                    </div>
+                </section>
+                
+                <!-- 留言墙区域 -->
+                <section class="message-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <span class="title-icon">💌</span> 主播留言
+                        </h2>
+                    </div>
+                    <div id="message-wall" class="message-wall card">
+                        <!-- 留言内容由JS动态生成 -->
+                    </div>
+                </section>
+                
+                <!-- 趣味交互区域 -->
+                <section class="interactive-section">
+                    <div id="particle-canvas" class="particle-canvas"></div>
+                    <div id="floating-barrage" class="floating-barrage"></div>
+                </section>
             </div>
-            
-            <!-- 弹幕容器 -->
-            <div class="barrage-container"></div>
-            
-            <!-- 粒子容器 -->
-            <div class="particle-container"></div>
         `;
         
-        // 保存重要元素的引用
-        this.characterImage = container.querySelector('.character-image');
-        this.characterCredit = container.querySelector('.character-credit');
-        this.messageCard = container.querySelector('.message-card');
-        this.messageText = container.querySelector('.message-text');
-        this.messageEmoji = container.querySelector('.message-emoji');
-        this.messageDate = container.querySelector('.message-date');
-        this.messageCounter = container.querySelector('.message-counter');
-        this.prevBtn = container.querySelector('.prev-btn');
-        this.pauseBtn = container.querySelector('.pause-btn');
-        this.nextBtn = container.querySelector('.next-btn');
-        this.likeBtn = container.querySelector('.like-btn');
-        this.likeCount = container.querySelector('.like-count');
-        this.countdownDisplay = container.querySelector('.countdown-display');
-        this.scheduleBtn = container.querySelector('.schedule-btn');
-        this.schedulePanel = container.querySelector('.schedule-panel');
-        this.subscribeBtn = container.querySelector('.subscribe-btn');
-        this.barrageContainer = container.querySelector('.barrage-container');
-        this.particleContainer = container.querySelector('.particle-container');
+        container.innerHTML = html;
+        console.log('首页HTML结构已渲染');
     }
+    
+    // ==================== 图片画廊系统 ====================
 
     async initImageGallery() {
-        const images = this.characterImages;
+        const imageElement = document.getElementById('character-image');
+        const imageCredit = document.querySelector('.image-credit');
+        const imageDescription = document.querySelector('.image-description');
         
-        // 防重复逻辑：如果上次有记录，尝试选不同的图片
-        let availableIndices = images.map((_, index) => index);
-        
-        if (this.lastImageId !== undefined) {
-            const lastIndex = images.findIndex(img => img.id === this.lastImageId);
-            if (lastIndex !== -1) {
-                availableIndices = availableIndices.filter(i => i !== lastIndex);
-            }
-        }
-        
-        // 随机选择一张图片
-        const randomIndex = availableIndices.length > 0 
-            ? availableIndices[Math.floor(Math.random() * availableIndices.length)]
-            : Math.floor(Math.random() * images.length);
-            
-        this.currentImageIndex = randomIndex;
-        const selectedImage = images[randomIndex];
-        
-        // 保存选择记录
-        localStorage.setItem('lastCharacterImageId', selectedImage.id.toString());
-        
-        // 设置图片
-        this.characterImage.alt = selectedImage.alt;
-        this.characterCredit.textContent = selectedImage.credit || '';
-        
-        // 预加载图片
-        await this.loadImage(selectedImage.url);
-    }
-
-    loadImage(url) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => {
-                this.characterImage.src = url;
-                setTimeout(() => {
-                    this.characterImage.classList.add('loaded');
-                    resolve();
-                }, 100);
-            };
-            img.onerror = () => {
-                // 加载失败时使用占位图
-                this.characterImage.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600"><rect width="400" height="600" fill="%230a0a0a"/><text x="200" y="300" font-family="Arial" font-size="20" fill="white" text-anchor="middle">桃汽水の魔力补给站</text></svg>';
-                this.characterImage.alt = '图片加载失败';
-                this.characterCredit.textContent = '图片加载失败，请刷新重试';
-                this.characterImage.classList.add('loaded');
-                reject(new Error('图片加载失败'));
-            };
-            img.src = url;
-        });
-    }
-
-    initAnnouncement() {
-        // 初始化倒计时
-        this.updateCountdown();
-        this.timers.push(setInterval(() => this.updateCountdown(), 1000));
-        
-        // 计算距离周年庆的天数
-        const targetDate = new Date(this.anniversaryEvents.countdownTo);
-        const today = new Date();
-        const diffTime = targetDate - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        if (diffDays <= 0) {
-            this.countdownDisplay.textContent = '🎉 庆典进行中！ 🎉';
-        } else {
-            this.countdownDisplay.textContent = `距离庆典还有 ${diffDays} 天`;
-        }
-    }
-
-    updateCountdown() {
-        const targetDate = new Date(this.anniversaryEvents.countdownTo);
-        const now = new Date();
-        
-        const diffMs = targetDate - now;
-        
-        if (diffMs <= 0) {
-            this.countdownDisplay.textContent = '🎉 庆典进行中！ 🎉';
+        if (!imageElement || !this.config?.characterImages?.length) {
+            console.warn('图片元素未找到或配置为空');
             return;
         }
         
-        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+        // 设置占位图
+        imageElement.src = './assets/home/placeholder.jpg';
+        imageElement.alt = '加载中...';
+        imageElement.classList.add('loading');
         
-        this.countdownDisplay.textContent = `距离庆典还有 ${days}天 ${hours}时 ${minutes}分 ${seconds}秒`;
+        // 随机选择图片（避免重复）
+        let availableIndices = [...Array(this.config.characterImages.length).keys()];
+        const lastImageId = localStorage.getItem('lastCharacterImageId');
+        
+        if (lastImageId) {
+            const lastIndex = this.config.characterImages.findIndex(img => img.id == lastImageId);
+            if (lastIndex !== -1) {
+                availableIndices = availableIndices.filter(idx => idx !== lastIndex);
+            }
+        }
+        
+        // 如果所有图片都显示过了，重置
+        if (availableIndices.length === 0) {
+            availableIndices = [...Array(this.config.characterImages.length).keys()];
+        }
+        
+        const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        this.currentImageIndex = randomIndex;
+        const selectedImage = this.config.characterImages[randomIndex];
+        
+        // 保存到localStorage
+        localStorage.setItem('lastCharacterImageId', selectedImage.id);
+        
+        // 预加载图片
+        await this.preloadImage(selectedImage.url);
+        
+        // 更新图片
+        imageElement.src = selectedImage.url;
+        imageElement.alt = selectedImage.alt;
+        imageElement.classList.remove('loading');
+        
+        // 更新图片信息
+        if (imageCredit) imageCredit.textContent = selectedImage.credit || '';
+        if (imageDescription) imageDescription.textContent = selectedImage.description || '';
+        
+        // 淡入效果
+        imageElement.style.opacity = 0;
+        requestAnimationFrame(() => {
+            imageElement.style.transition = 'opacity 0.8s ease';
+            imageElement.style.opacity = 1;
+        });
+        
+        // 错误处理
+        imageElement.onerror = () => {
+            console.error('图片加载失败:', selectedImage.url);
+            imageElement.src = './assets/home/default-character.jpg';
+            imageElement.alt = '默认形象';
+            imageElement.classList.add('error');
+            
+            if (imageCredit) imageCredit.textContent = '图片加载失败';
+            if (imageDescription) imageDescription.textContent = '显示默认形象';
+        };
+        
+        console.log('图片画廊初始化完成');
     }
+    
+    async preloadImage(url) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = url;
+        });
+    }
+    
+    // ==================== 公告板系统 ====================
+
+    initAnnouncement() {
+        const board = document.getElementById('announcement-board');
+        if (!board) {
+            console.warn('公告板元素未找到');
+            return;
+        }
+        
+        // 按优先级排序公告（紧急优先）
+        const sortedAnnouncements = [...(this.config.announcements || [])].sort((a, b) => {
+            return (b.priority || 0) - (a.priority || 0);
+        });
+        
+        if (!sortedAnnouncements.length) {
+            board.innerHTML = this.createDefaultAnnouncement();
+            return;
+        }
+        
+        // 显示最新的一条公告
+        const latestAnnouncement = sortedAnnouncements[0];
+        board.innerHTML = this.createAnnouncementHTML(latestAnnouncement, sortedAnnouncements.length);
+        
+        console.log('公告板初始化完成');
+    }
+    
+    createDefaultAnnouncement() {
+        return `
+            <div class="announcement-item">
+                <div class="announcement-header">
+                    <h3 class="announcement-title">欢迎来到魔力补给站！</h3>
+                </div>
+                <p class="announcement-content">这里是桃汽水的粉丝互动站，最新公告将在这里显示～</p>
+                <div class="announcement-footer">
+                    <span class="announcement-date">${this.formatDate(new Date().toISOString().split('T')[0])}</span>
+                </div>
+            </div>
+        `;
+    }
+    
+    createAnnouncementHTML(announcement, totalCount) {
+        const isUrgent = announcement.type === 'urgent';
+        
+        return `
+            <div class="announcement-item current">
+                <div class="announcement-header">
+                    <h3 class="announcement-title">${announcement.title}</h3>
+                    ${isUrgent ? '<span class="urgent-badge">紧急</span>' : ''}
+                </div>
+                <p class="announcement-content">${announcement.content}</p>
+                <div class="announcement-footer">
+                    <span class="announcement-date">${this.formatDate(announcement.date)}</span>
+                    ${totalCount > 1 ? 
+                        `<button class="btn-more-announcements btn btn-pink" data-count="${totalCount - 1}">
+                            查看更多公告 (${totalCount - 1}条)
+                         </button>` : 
+                        ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    showAllAnnouncements() {
+        const board = document.getElementById('announcement-board');
+        if (!board) return;
+        
+        const sortedAnnouncements = [...(this.config.announcements || [])].sort((a, b) => {
+            return (b.priority || 0) - (a.priority || 0);
+        });
+        
+        const announcementsHTML = sortedAnnouncements.map((announcement, index) => `
+            <div class="announcement-item ${index === 0 ? 'current' : ''}">
+                <div class="announcement-header">
+                    <h3 class="announcement-title">${announcement.title}</h3>
+                    ${announcement.type === 'urgent' ? '<span class="urgent-badge">紧急</span>' : ''}
+                </div>
+                <p class="announcement-content">${announcement.content}</p>
+                <div class="announcement-footer">
+                    <span class="announcement-date">${this.formatDate(announcement.date)}</span>
+                </div>
+            </div>
+        `).join('');
+        
+        board.innerHTML = `
+            <div class="announcements-list">
+                ${announcementsHTML}
+            </div>
+            <button class="btn-less-announcements btn btn-pink mt-2">
+                收起公告
+            </button>
+        `;
+        
+        // 绑定收起按钮事件
+        const lessBtn = board.querySelector('.btn-less-announcements');
+        if (lessBtn) {
+            this.addEventListener(lessBtn, 'click', () => this.initAnnouncement());
+        }
+    }
+    
+    // ==================== 留言墙系统 ====================
 
     initMessageWall() {
-        // 加载点赞记录
-        this.loadLikedMessages();
+        const wall = document.getElementById('message-wall');
+        if (!wall) {
+            console.warn('留言墙元素未找到');
+            return;
+        }
         
-        // 显示第一条留言
-        this.showMessage(this.currentMessageIndex);
+        if (!this.config?.fanMessages?.length) {
+            wall.innerHTML = this.createDefaultMessage();
+            return;
+        }
         
-        // 自动轮播
-        this.startAutoPlay();
+        this.currentMessageIndex = 0;
+        this.renderMessage(wall, this.currentMessageIndex);
         
-        // 保存方法引用用于事件监听
-        this.pauseMessages = () => this.pauseAutoPlay();
-        this.resumeMessages = () => this.startAutoPlay();
+        // 启动自动轮播
+        this.startMessageCarousel();
         
-        // 添加鼠标悬停暂停/恢复
-        this.messageCard.addEventListener('mouseenter', this.pauseMessages);
-        this.messageCard.addEventListener('mouseleave', this.resumeMessages);
+        console.log('留言墙初始化完成');
     }
-
-    showMessage(index) {
-        const messages = this.streamerMessages;
-        if (messages.length === 0) return;
+    
+    createDefaultMessage() {
+        return `
+            <div class="message-item">
+                <div class="message-header">
+                    <span class="message-avatar">🍑</span>
+                    <div class="message-meta">
+                        <span class="message-author">桃汽水</span>
+                        <span class="message-date">${this.formatDate(new Date().toISOString().split('T')[0])}</span>
+                    </div>
+                </div>
+                <p class="message-content">留言正在准备中，稍后再来看看吧～</p>
+                <div class="message-footer">
+                    <div class="message-controls">
+                        <span class="message-counter">1/1</span>
+                    </div>
+                    <button class="btn-like" disabled>
+                        <span class="like-icon">❤️</span> <span class="like-count">0</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    renderMessage(container, index) {
+        const message = this.config.fanMessages[index];
+        if (!message) return;
         
-        // 循环索引
-        if (index >= messages.length) index = 0;
-        if (index < 0) index = messages.length - 1;
+        // 从localStorage获取点赞数
+        const likeKey = `message_like_${message.id}`;
+        const storedLikes = localStorage.getItem(likeKey);
+        const likeCount = storedLikes ? parseInt(storedLikes) : (message.likes || 0);
         
-        this.currentMessageIndex = index;
-        const message = messages[index];
+        container.innerHTML = `
+            <div class="message-item">
+                <div class="message-header">
+                    <span class="message-avatar">${message.emoji || '🍑'}</span>
+                    <div class="message-meta">
+                        <span class="message-author">桃汽水</span>
+                        <span class="message-date">${this.formatDate(message.date)}</span>
+                    </div>
+                </div>
+                <p class="message-content">${message.text}</p>
+                <div class="message-footer">
+                    <div class="message-controls">
+                        <button class="btn-prev-message btn btn-sm btn-primary">
+                            <span class="btn-icon">←</span>
+                        </button>
+                        <span class="message-counter">${index + 1}/${this.config.fanMessages.length}</span>
+                        <button class="btn-next-message btn btn-sm btn-primary">
+                            <span class="btn-icon">→</span>
+                        </button>
+                        <button class="btn-pause-play btn btn-sm btn-${this.isAutoPlaying ? 'yellow' : 'green'}">
+                            <span class="btn-icon">${this.isAutoPlaying ? '⏸️' : '▶️'}</span>
+                        </button>
+                    </div>
+                    <button class="btn-like" data-message-id="${message.id}">
+                        <span class="like-icon">❤️</span> <span class="like-count">${likeCount}</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // 绑定控制按钮事件
+        const prevBtn = container.querySelector('.btn-prev-message');
+        const nextBtn = container.querySelector('.btn-next-message');
+        const pausePlayBtn = container.querySelector('.btn-pause-play');
+        const likeBtn = container.querySelector('.btn-like');
+        
+        if (prevBtn) {
+            this.addEventListener(prevBtn, 'click', () => this.showPrevMessage());
+        }
+        
+        if (nextBtn) {
+            this.addEventListener(nextBtn, 'click', () => this.showNextMessage());
+        }
+        
+        if (pausePlayBtn) {
+            this.addEventListener(pausePlayBtn, 'click', () => this.toggleCarousel());
+        }
+        
+        if (likeBtn) {
+            this.addEventListener(likeBtn, 'click', () => this.handleLike(message.id, likeBtn));
+        }
+    }
+    
+    showPrevMessage() {
+        if (!this.config?.fanMessages?.length) return;
+        
+        this.currentMessageIndex = (this.currentMessageIndex - 1 + this.config.fanMessages.length) % this.config.fanMessages.length;
+        this.renderMessage(document.getElementById('message-wall'), this.currentMessageIndex);
+    }
+    
+    showNextMessage() {
+        if (!this.config?.fanMessages?.length) return;
+        
+        this.currentMessageIndex = (this.currentMessageIndex + 1) % this.config.fanMessages.length;
+        this.renderMessage(document.getElementById('message-wall'), this.currentMessageIndex);
+    }
+    
+    startMessageCarousel() {
+        if (this.carouselTimer) {
+            clearInterval(this.carouselTimer);
+        }
+        
+        const interval = (this.config.settings?.messageCarouselInterval || 10) * 1000;
+        
+        this.carouselTimer = setInterval(() => {
+            if (this.isAutoPlaying && this.config?.fanMessages?.length > 1) {
+                this.showNextMessage();
+            }
+        }, interval);
+        
+        this.timers.push(this.carouselTimer);
+    }
+    
+    toggleCarousel() {
+        this.isAutoPlaying = !this.isAutoPlaying;
+        
+        const icon = document.querySelector('.btn-pause-play .btn-icon');
+        const button = document.querySelector('.btn-pause-play');
+        
+        if (icon && button) {
+            icon.textContent = this.isAutoPlaying ? '⏸️' : '▶️';
+            button.className = button.className.replace(/btn-\w+/, this.isAutoPlaying ? 'btn-yellow' : 'btn-green');
+        }
+        
+        if (this.isAutoPlaying) {
+            this.startMessageCarousel();
+        } else {
+            clearInterval(this.carouselTimer);
+            this.carouselTimer = null;
+        }
+    }
+    
+    handleLike(messageId, button) {
+        const likeKey = `message_like_${messageId}`;
+        let likeCount = parseInt(button.querySelector('.like-count').textContent);
+        likeCount++;
+        
+        // 保存到localStorage
+        localStorage.setItem(likeKey, likeCount);
         
         // 更新显示
-        this.messageText.textContent = message.text;
-        this.messageEmoji.textContent = message.emoji + ' ';
-        this.messageDate.textContent = message.date;
-        this.messageCounter.textContent = `${index + 1} / ${messages.length}`;
-        
-        // 更新点赞按钮状态
-        const isLiked = this.likedMessages.has(message.id);
-        this.likeBtn.classList.toggle('liked', isLiked);
-        
-        // 获取点赞数
-        const likes = localStorage.getItem(`message_likes_${message.id}`) || '0';
-        this.likeCount.textContent = likes;
-    }
-
-    startAutoPlay() {
-        if (this.autoPlayTimer) clearInterval(this.autoPlayTimer);
-        
-        this.autoPlayTimer = setInterval(() => {
-            this.currentMessageIndex++;
-            this.showMessage(this.currentMessageIndex);
-        }, 8000);
-        
-        this.isAutoPlaying = true;
-        this.pauseBtn.textContent = '⏸';
-    }
-
-    pauseAutoPlay() {
-        if (this.autoPlayTimer) {
-            clearInterval(this.autoPlayTimer);
-            this.autoPlayTimer = null;
+        const countSpan = button.querySelector('.like-count');
+        if (countSpan) {
+            countSpan.textContent = likeCount;
         }
         
-        this.isAutoPlaying = false;
-        this.pauseBtn.textContent = '▶';
+        // 添加动画效果
+        button.style.transform = 'scale(1.2)';
+        setTimeout(() => {
+            button.style.transform = 'scale(1)';
+        }, 300);
+        
+        console.log(`留言 ${messageId} 点赞数: ${likeCount}`);
     }
-
-    toggleAutoPlay() {
-        if (this.isAutoPlaying) {
-            this.pauseAutoPlay();
-        } else {
-            this.startAutoPlay();
-        }
-    }
-
-    loadLikedMessages() {
-        const liked = localStorage.getItem('liked_messages');
-        if (liked) {
-            this.likedMessages = new Set(JSON.parse(liked));
-        }
-    }
-
-    saveLikedMessages() {
-        localStorage.setItem('liked_messages', JSON.stringify([...this.likedMessages]));
-    }
+    
+    // ==================== 交互效果系统 ====================
 
     initInteractiveEffects() {
-        // 初始化弹幕系统（桌面端）
-        if (window.innerWidth > 768) {
-            this.initBarrageSystem();
+        const settings = this.config.settings || {};
+        
+        if (settings.enableParticles !== false && window.innerWidth >= 768) {
+            this.initParticleEffect();
         }
         
-        // 初始化粒子系统（桌面端）
-        if (window.innerWidth > 768) {
-            this.initParticleSystem();
+        if (settings.enableBarrage !== false && window.innerWidth >= 768) {
+            this.initFloatingBarrage();
         }
+        
+        console.log('交互效果初始化完成');
     }
-
-    initBarrageSystem() {
-        // 创建弹幕
-        const createBarrage = () => {
-            const messages = this.barrageMessages;
-            const text = messages[Math.floor(Math.random() * messages.length)];
-            
-            const barrage = document.createElement('div');
-            barrage.className = 'barrage-item';
-            barrage.textContent = text;
-            
-            // 随机颜色
-            const colors = ['#FF00FF', '#BF00FF', '#00BFFF', '#00FF00', '#FFFF00', '#FFA500'];
-            barrage.style.color = colors[Math.floor(Math.random() * colors.length)];
-            
-            // 随机位置和速度
-            const top = Math.random() * 80 + 10; // 10% - 90%
-            const speed = Math.random() * 100 + 50; // 50-150px每秒
-            const duration = (window.innerWidth + 200) / speed;
-            
-            barrage.style.top = `${top}%`;
-            barrage.style.left = `-200px`;
-            barrage.style.transform = `translateX(-100%)`;
-            
-            this.barrageContainer.appendChild(barrage);
-            
-            // 动画
-            barrage.animate([
-                { transform: `translateX(-100%)`, opacity: 0 },
-                { transform: `translateX(0%)`, opacity: 1 },
-                { transform: `translateX(0%)`, opacity: 1, offset: 0.8 },
-                { transform: `translateX(100%)`, opacity: 0 }
-            ], {
-                duration: duration * 1000,
-                easing: 'linear'
-            });
-            
-            // 点击效果
-            barrage.addEventListener('click', () => {
-                barrage.style.opacity = '1';
-                barrage.style.textShadow = '0 0 15px currentColor';
-                setTimeout(() => {
-                    barrage.style.opacity = '';
-                    barrage.style.textShadow = '';
-                }, 1000);
-            });
-            
-            // 移除元素
-            setTimeout(() => {
-                if (barrage.parentNode) {
-                    barrage.remove();
-                }
-            }, duration * 1000 + 1000);
-        };
+    
+    initParticleEffect() {
+        const canvas = document.getElementById('particle-canvas');
+        if (!canvas) return;
         
-        // 定时生成弹幕
-        this.barrageInterval = setInterval(createBarrage, 2000);
-        // 初始创建一些弹幕
-        for (let i = 0; i < 5; i++) {
-            setTimeout(createBarrage, i * 300);
-        }
-    }
-
-    initParticleSystem() {
-        // 根据当前皮套图的主色调设置粒子颜色
-        const currentImage = this.characterImages[this.currentImageIndex];
-        const mainColor = currentImage?.mainColor || '#FF00FF';
+        const particleCount = window.innerWidth < 768 ? 
+            (this.config.settings?.mobileParticleCount || 10) : 
+            (this.config.settings?.particleCount || 30);
         
-        // 鼠标移动时生成粒子
-        document.addEventListener('mousemove', (e) => {
-            if (window.innerWidth <= 768) return;
-            
-            // 创建一些粒子
-            for (let i = 0; i < 3; i++) {
-                this.createParticle(e.clientX, e.clientY, mainColor);
+        // 主题颜色
+        const colors = [
+            'rgba(179, 157, 219, 0.6)',  // primary
+            'rgba(244, 143, 177, 0.6)',  // secondary
+            'rgba(206, 147, 216, 0.6)',  // purple
+            'rgba(144, 202, 249, 0.6)',  // blue
+            'rgba(255, 204, 128, 0.6)',  // orange
+            'rgba(165, 214, 167, 0.6)',  // green
+            'rgba(255, 245, 157, 0.6)'   // yellow
+        ];
+        
+        for (let i = 0; i < particleCount; i++) {
+            const particle = this.createParticle(canvas, colors);
+            if (particle) {
+                this.particles.push(particle);
+                this.animateParticle(particle);
             }
-        });
-        
-        // 动画循环
-        const animateParticles = () => {
-            this.updateParticles();
-            this.particleAnimationFrame = requestAnimationFrame(animateParticles);
-        };
-        
-        animateParticles();
+        }
     }
-
-    createParticle(x, y, color) {
+    
+    createParticle(container, colors) {
         const particle = document.createElement('div');
         particle.className = 'particle';
-        particle.style.left = `${x}px`;
-        particle.style.top = `${y}px`;
-        particle.style.backgroundColor = color;
         
-        // 随机大小和透明度
-        const size = Math.random() * 4 + 2;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.opacity = Math.random() * 0.5 + 0.3;
+        // 随机位置（避免覆盖重要内容）
+        const left = Math.random() * 90 + 5; // 5% - 95%
+        const top = Math.random() * 70 + 15; // 15% - 85%
         
-        this.particleContainer.appendChild(particle);
+        // 随机大小
+        const size = Math.random() * 4 + 1;
         
-        // 粒子数据
-        const particleData = {
+        // 随机颜色
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        // 初始透明度
+        const opacity = Math.random() * 0.4 + 0.3;
+        
+        particle.style.cssText = `
+            position: absolute;
+            left: ${left}%;
+            top: ${top}%;
+            width: ${size}px;
+            height: ${size}px;
+            background: ${color};
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: ${opacity};
+            will-change: transform, opacity;
+        `;
+        
+        container.appendChild(particle);
+        
+        return {
             element: particle,
-            x: x,
-            y: y,
-            vx: (Math.random() - 0.5) * 2,
-            vy: -Math.random() * 3 - 1,
-            life: 1.0,
-            decay: Math.random() * 0.02 + 0.01
+            x: left,
+            y: top,
+            size: size,
+            color: color,
+            speedX: (Math.random() - 0.5) * 0.3,
+            speedY: -Math.random() * 0.2,
+            opacity: opacity,
+            animationId: null
+        };
+    }
+    
+    animateParticle(particle) {
+        const animate = () => {
+            // 更新位置
+            particle.x += particle.speedX;
+            particle.y += particle.speedY;
+            
+            // 边界处理
+            if (particle.x < 0) particle.x = 100;
+            if (particle.x > 100) particle.x = 0;
+            if (particle.y < 0) {
+                // 粒子到达顶部，重置到底部
+                particle.y = 100;
+                particle.x = Math.random() * 100;
+            }
+            
+            // 更新透明度（呼吸效果）
+            particle.opacity = 0.3 + Math.sin(Date.now() / 1000 + particle.x) * 0.3;
+            
+            // 应用变化
+            particle.element.style.left = `${particle.x}%`;
+            particle.element.style.top = `${particle.y}%`;
+            particle.element.style.opacity = particle.opacity;
+            
+            // 继续动画
+            particle.animationId = requestAnimationFrame(animate);
         };
         
-        this.particles.push(particleData);
+        particle.animationId = requestAnimationFrame(animate);
+    }
+    
+    initFloatingBarrage() {
+        const container = document.getElementById('floating-barrage');
+        if (!container || !this.config?.barrageMessages?.length) return;
         
-        // 限制粒子数量
-        if (this.particles.length > 100) {
-            const oldParticle = this.particles.shift();
-            if (oldParticle.element.parentNode) {
-                oldParticle.element.remove();
-            }
+        const settings = this.config.settings || {};
+        const interval = (settings.barrageInterval || 8) * 1000;
+        const count = settings.barrageCount || 3;
+        
+        // 初始创建弹幕
+        for (let i = 0; i < count; i++) {
+            setTimeout(() => {
+                this.createBarrage(container);
+            }, i * (interval / count));
         }
+        
+        // 定时创建新弹幕
+        const barrageTimer = setInterval(() => {
+            this.createBarrage(container);
+        }, interval);
+        
+        this.timers.push(barrageTimer);
     }
-
-    updateParticles() {
-        for (let i = this.particles.length - 1; i >= 0; i--) {
-            const particle = this.particles[i];
+    
+    createBarrage(container) {
+        if (!this.config?.barrageMessages?.length) return;
+        
+        const barrage = document.createElement('div');
+        barrage.className = 'barrage';
+        
+        // 随机选择内容
+        const messages = this.config.barrageMessages;
+        const text = messages[Math.floor(Math.random() * messages.length)];
+        
+        // 随机颜色
+        const colors = [
+            '#B39DDB', '#F48FB1', '#CE93D8', 
+            '#90CAF9', '#FFCC80', '#A5D6A7', '#FFF59D'
+        ];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        // 随机起始位置（从右侧进入）
+        const top = Math.random() * 70 + 15; // 15% - 85%
+        
+        barrage.textContent = text;
+        barrage.style.cssText = `
+            position: absolute;
+            top: ${top}%;
+            right: -200px;
+            color: ${color};
+            font-size: 14px;
+            white-space: nowrap;
+            text-shadow: 0 0 5px ${color}80;
+            pointer-events: auto;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            will-change: transform, opacity;
+            z-index: 50;
+        `;
+        
+        container.appendChild(barrage);
+        
+        // 动画参数
+        const startTime = Date.now();
+        const duration = 15000; // 15秒
+        const startRight = -200;
+        const endRight = window.innerWidth + 200;
+        
+        const barrageData = {
+            element: barrage,
+            startTime: startTime,
+            duration: duration,
+            startRight: startRight,
+            endRight: endRight,
+            animationId: null
+        };
+        
+        this.barrages.push(barrageData);
+        
+        // 点击交互
+        this.addEventListener(barrage, 'click', () => {
+            barrage.style.opacity = '1';
+            barrage.style.fontWeight = 'bold';
+            barrage.style.textShadow = `0 0 10px ${color}`;
+            barrage.style.fontSize = '16px';
             
-            // 更新位置
-            particle.x += particle.vx;
-            particle.y += particle.vy;
-            particle.vx *= 0.98; // 阻力
-            particle.vy += 0.05; // 重力
+            setTimeout(() => {
+                barrage.style.opacity = '0.8';
+                barrage.style.fontWeight = '500';
+                barrage.style.textShadow = `0 0 5px ${color}80`;
+                barrage.style.fontSize = '14px';
+            }, 1000);
+        });
+        
+        // 开始动画
+        this.animateBarrage(barrageData);
+    }
+    
+    animateBarrage(barrage) {
+        const animate = () => {
+            const elapsed = Date.now() - barrage.startTime;
+            const progress = Math.min(elapsed / barrage.duration, 1);
             
-            // 更新生命周期
-            particle.life -= particle.decay;
-            
-            // 更新元素
-            particle.element.style.left = `${particle.x}px`;
-            particle.element.style.top = `${particle.y}px`;
-            particle.element.style.opacity = particle.life;
-            
-            // 移除死亡粒子
-            if (particle.life <= 0) {
-                if (particle.element.parentNode) {
-                    particle.element.remove();
+            if (progress < 1) {
+                // 计算当前位置
+                const currentRight = barrage.startRight + progress * (barrage.endRight - barrage.startRight);
+                
+                // 透明度变化（淡入淡出）
+                let opacity = 0.8;
+                if (progress < 0.1) {
+                    opacity = progress * 10 * 0.8;
+                } else if (progress > 0.9) {
+                    opacity = (1 - progress) * 10 * 0.8;
                 }
-                this.particles.splice(i, 1);
+                
+                // 应用变化
+                barrage.element.style.right = `${currentRight}px`;
+                barrage.element.style.opacity = opacity;
+                
+                // 继续动画
+                barrage.animationId = requestAnimationFrame(animate);
+            } else {
+                // 动画完成，移除元素
+                if (barrage.element.parentNode) {
+                    barrage.element.parentNode.removeChild(barrage.element);
+                }
+                
+                // 从数组中移除
+                const index = this.barrages.indexOf(barrage);
+                if (index > -1) {
+                    this.barrages.splice(index, 1);
+                }
             }
-        }
+        };
+        
+        barrage.animationId = requestAnimationFrame(animate);
     }
+    
+    // ==================== 事件绑定 ====================
 
     bindEvents() {
-        // 留言墙控制
-        this.prevBtn.addEventListener('click', () => {
-            this.currentMessageIndex--;
-            this.showMessage(this.currentMessageIndex);
-        });
+        // 图片刷新按钮
+        const refreshBtn = document.getElementById('refresh-image');
+        if (refreshBtn) {
+            this.addEventListener(refreshBtn, 'click', () => {
+                this.initImageGallery();
+                
+                // 添加点击反馈
+                refreshBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    refreshBtn.style.transform = 'scale(1)';
+                }, 150);
+            });
+        }
         
-        this.nextBtn.addEventListener('click', () => {
-            this.currentMessageIndex++;
-            this.showMessage(this.currentMessageIndex);
-        });
+        // 查看更多公告按钮
+        const moreAnnouncementsHandler = (e) => {
+            const target = e.target.closest('.btn-more-announcements');
+            if (target) {
+                this.showAllAnnouncements();
+            }
+        };
         
-        this.pauseBtn.addEventListener('click', () => this.toggleAutoPlay());
+        this.addEventListener(document, 'click', moreAnnouncementsHandler);
         
-        this.likeBtn.addEventListener('click', () => {
-            const currentMessage = this.streamerMessages[this.currentMessageIndex];
-            const isLiked = this.likedMessages.has(currentMessage.id);
+        // 留言墙悬停控制
+        const messageWall = document.getElementById('message-wall');
+        if (messageWall) {
+            this.addEventListener(messageWall, 'mouseenter', () => {
+                if (this.isAutoPlaying) {
+                    this.toggleCarousel();
+                }
+            });
             
-            if (isLiked) {
-                // 取消点赞
-                this.likedMessages.delete(currentMessage.id);
-                this.likeBtn.classList.remove('liked');
-                
-                // 更新本地存储点赞数
-                let likes = parseInt(localStorage.getItem(`message_likes_${currentMessage.id}`) || '0');
-                likes = Math.max(0, likes - 1);
-                localStorage.setItem(`message_likes_${currentMessage.id}`, likes.toString());
-                this.likeCount.textContent = likes;
-            } else {
-                // 点赞
-                this.likedMessages.add(currentMessage.id);
-                this.likeBtn.classList.add('liked');
-                
-                // 更新本地存储点赞数
-                let likes = parseInt(localStorage.getItem(`message_likes_${currentMessage.id}`) || '0');
-                likes += 1;
-                localStorage.setItem(`message_likes_${currentMessage.id}`, likes.toString());
-                this.likeCount.textContent = likes;
+            this.addEventListener(messageWall, 'mouseleave', () => {
+                if (!this.isAutoPlaying) {
+                    this.toggleCarousel();
+                }
+            });
+        }
+        
+        // 窗口大小变化
+        this.addEventListener(window, 'resize', this.handleResize.bind(this));
+        
+        console.log('事件绑定完成');
+    }
+    
+    addEventListener(element, event, handler) {
+        element.addEventListener(event, handler);
+        this.eventListeners.push({ element, event, handler });
+    }
+    
+    handleResize() {
+        // 重新初始化交互效果（如果窗口大小变化）
+        if (window.innerWidth >= 768) {
+            // 清理现有效果
+            this.particles.forEach(p => {
+                if (p.element.parentNode) {
+                    p.element.parentNode.removeChild(p.element);
+                }
+                if (p.animationId) {
+                    cancelAnimationFrame(p.animationId);
+                }
+            });
+            this.particles = [];
+            
+            this.barrages.forEach(b => {
+                if (b.element.parentNode) {
+                    b.element.parentNode.removeChild(b.element);
+                }
+                if (b.animationId) {
+                    cancelAnimationFrame(b.animationId);
+                }
+            });
+            this.barrages = [];
+            
+            // 重新初始化
+            this.initInteractiveEffects();
+        }
+    }
+    
+    // ==================== 工具方法 ====================
+
+    formatDate(dateString) {
+        try {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (isNaN(diffDays)) {
+                return dateString;
             }
             
-            this.saveLikedMessages();
-        });
+            if (diffDays === 0) return '今天';
+            if (diffDays === 1) return '昨天';
+            if (diffDays < 7) return `${diffDays}天前`;
+            
+            return date.toLocaleDateString('zh-CN', { 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        } catch (error) {
+            console.error('日期格式化错误:', error);
+            return dateString;
+        }
+    }
+    
+    showError(container, error) {
+        container.innerHTML = `
+            <div class="card" style="max-width: 600px; margin: 2rem auto;">
+                <h2 class="card-title">页面加载失败</h2>
+                <p class="card-content">抱歉，首页模块加载时出现了问题：${error.message}</p>
+                <div class="mt-2">
+                    <button id="retry-home" class="btn btn-primary">重试</button>
+                    <button onclick="window.app.navigate('/')" class="btn btn-pink ml-2">返回首页</button>
+                </div>
+            </div>
+        `;
         
-        // 公告板控制
-        this.scheduleBtn.addEventListener('click', () => {
-            this.schedulePanel.classList.toggle('active');
-            this.scheduleBtn.textContent = this.schedulePanel.classList.contains('active') 
-                ? '收起日程' 
-                : '查看详细日程';
-        });
-        
-        this.subscribeBtn.addEventListener('click', () => {
-            alert('已订阅直播提醒！周年庆开始前会通过浏览器通知提醒您～');
-        });
-        
-        // 窗口大小变化时调整效果
-        window.addEventListener('resize', () => {
-            // 移动端关闭特效，桌面端重新初始化
-            if (window.innerWidth <= 768) {
-                if (this.barrageInterval) {
-                    clearInterval(this.barrageInterval);
-                    this.barrageInterval = null;
-                }
-                if (this.particleContainer) {
-                    this.particleContainer.style.display = 'none';
-                }
-            } else {
-                if (!this.barrageInterval) {
-                    this.initBarrageSystem();
-                }
-                if (this.particleContainer) {
-                    this.particleContainer.style.display = 'block';
-                }
-            }
-        });
+        const retryBtn = document.getElementById('retry-home');
+        if (retryBtn) {
+            retryBtn.addEventListener('click', () => {
+                this.destroy();
+                this.init(container);
+            });
+        }
     }
 }
