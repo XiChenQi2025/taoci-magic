@@ -85,6 +85,9 @@
     height: 100%;
     object-fit: cover;
     transition: opacity 0.8s ease;
+    background: linear-gradient(135deg, 
+        var(--primary-light) 0%, 
+        var(--primary) 100%);
 }
 
 .character-overlay {
@@ -570,10 +573,35 @@
 /* 加载状态 */
 .character-image.loading {
     filter: blur(5px);
+    background: linear-gradient(135deg, 
+        var(--primary-light) 0%, 
+        var(--primary) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.character-image.loading::after {
+    content: '🍑';
+    font-size: 3rem;
+    opacity: 0.5;
 }
 
 /* 错误状态 */
 .character-image.error {
     filter: grayscale(1);
     opacity: 0.7;
+    background: linear-gradient(135deg, 
+        var(--primary-light) 0%, 
+        var(--primary) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.character-image.error::after {
+    content: '❌ 图片加载失败';
+    color: white;
+    font-size: 1.2rem;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }

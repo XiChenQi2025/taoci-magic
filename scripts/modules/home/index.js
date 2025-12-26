@@ -89,7 +89,7 @@ export default class HomeModule {
         this.eventListeners = [];
         
         // 移除样式
-        const styleLink = document.querySelector('link[href*="home-styles"]');
+        const styleLink = document.querySelector('link[href*="home-styles.css"]');
         if (styleLink) {
             styleLink.remove();
         }
@@ -120,7 +120,7 @@ export default class HomeModule {
             this.config = {
                 characterImages: [{ 
                     id: 1, 
-                    url: '', 
+                    url: 'assets/home/default-character.jpg',  // 修正默认路径
                     alt: '桃汽水', 
                     credit: '系统', 
                     description: '欢迎来到魔力补给站！' 
@@ -151,15 +151,18 @@ export default class HomeModule {
     
     loadStyles() {
         // 检查是否已经加载了样式
-        const existingStyle = document.querySelector('link[href*="home-styles"]');
+        const existingStyle = document.querySelector('link[href*="home-styles.css"]');
         if (existingStyle) {
             return;
         }
         
-        // 创建样式链接
+        // 创建样式链接 - 修正路径
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = './scripts/modules/home/home-styles.css';
+        // 注意：这里需要使用相对于网站根目录的路径
+        link.href = window.location.pathname.includes('modules') 
+            ? '../../home-styles.css'  // 如果当前在模块目录中
+            : 'scripts/modules/home/home-styles.css';  // 相对于根目录
         link.id = 'home-module-styles';
         
         // 添加到head
@@ -237,8 +240,7 @@ export default class HomeModule {
             return;
         }
         
-        // 设置占位图
-        imageElement.src = './assets/home/placeholder.jpg';
+        // 设置占位文本，不设置具体图片避免加载错误
         imageElement.alt = '加载中...';
         imageElement.classList.add('loading');
         
@@ -265,46 +267,93 @@ export default class HomeModule {
         // 保存到localStorage
         localStorage.setItem('lastCharacterImageId', selectedImage.id);
         
-        // 预加载图片
-        await this.preloadImage(selectedImage.url);
+        // 尝试加载图片，如果失败则使用默认图片
+        await this.loadImageWithFallback(selectedImage, imageElement, imageCredit, imageDescription);
         
-        // 更新图片
-        imageElement.src = selectedImage.url;
-        imageElement.alt = selectedImage.alt;
-        imageElement.classList.remove('loading');
+        console.log('图片画廊初始化完成');
+    }
+    
+    async loadImageWithFallback(selectedImage, imageElement, imageCredit, imageDescription) {
+        // 先尝试加载选中的图片
+        const img = new Image();
         
-        // 更新图片信息
-        if (imageCredit) imageCredit.textContent = selectedImage.credit || '';
-        if (imageDescription) imageDescription.textContent = selectedImage.description || '';
-        
-        // 淡入效果
-        imageElement.style.opacity = 0;
-        requestAnimationFrame(() => {
-            imageElement.style.transition = 'opacity 0.8s ease';
-            imageElement.style.opacity = 1;
+        // 添加加载和错误处理
+        return new Promise((resolve) => {
+            img.onload = () => {
+                // 图片加载成功
+                imageElement.src = selectedImage.url;
+                imageElement.alt = selectedImage.alt;
+                imageElement.classList.remove('loading');
+                
+                // 更新图片信息
+                if (imageCredit) imageCredit.textContent = selectedImage.credit || '';
+                if (imageDescription) imageDescription.textContent = selectedImage.description || '';
+                
+                // 淡入效果
+                imageElement.style.opacity = 0;
+                requestAnimationFrame(() => {
+                    imageElement.style.transition = 'opacity 0.8s ease';
+                    imageElement.style.opacity = 1;
+                });
+                
+                console.log('图片加载成功:', selectedImage.url);
+                resolve(true);
+            };
+            
+            img.onerror = () => {
+                console.error('图片加载失败，使用默认图片:', selectedImage.url);
+                // 加载失败，使用默认图片
+                this.loadDefaultImage(imageElement, imageCredit, imageDescription);
+                resolve(false);
+            };
+            
+            // 开始加载
+            img.src = selectedImage.url;
         });
+    }
+    
+    loadDefaultImage(imageElement, imageCredit, imageDescription) {
+        // 使用默认图片
+        const defaultImage = this.config.defaultImage || {
+            url: 'assets/home/default-character.jpg',
+            alt: '桃汽水-默认形象',
+            credit: '系统默认',
+            description: '欢迎来到魔力补给站！'
+        };
         
-        // 错误处理
-        imageElement.onerror = () => {
-            console.error('图片加载失败:', selectedImage.url);
-            imageElement.src = './assets/home/default-character.jpg';
-            imageElement.alt = '默认形象';
+        const img = new Image();
+        img.onload = () => {
+            imageElement.src = defaultImage.url;
+            imageElement.alt = defaultImage.alt;
+            imageElement.classList.remove('loading');
             imageElement.classList.add('error');
+            
+            if (imageCredit) imageCredit.textContent = defaultImage.credit;
+            if (imageDescription) imageDescription.textContent = defaultImage.description;
+            
+            // 淡入效果
+            imageElement.style.opacity = 0;
+            requestAnimationFrame(() => {
+                imageElement.style.transition = 'opacity 0.8s ease';
+                imageElement.style.opacity = 1;
+            });
+        };
+        
+        img.onerror = () => {
+            // 如果默认图片也加载失败，使用纯色背景
+            console.error('默认图片也加载失败，使用纯色背景');
+            imageElement.style.backgroundColor = 'var(--primary-light)';
+            imageElement.style.display = 'flex';
+            imageElement.style.alignItems = 'center';
+            imageElement.style.justifyContent = 'center';
+            imageElement.innerHTML = '<span style="color: white; font-size: 1.2rem;">🍑 桃汽水</span>';
+            imageElement.classList.remove('loading');
             
             if (imageCredit) imageCredit.textContent = '图片加载失败';
             if (imageDescription) imageDescription.textContent = '显示默认形象';
         };
         
-        console.log('图片画廊初始化完成');
-    }
-    
-    async preloadImage(url) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = url;
-        });
+        img.src = defaultImage.url;
     }
     
     // ==================== 公告板系统 ====================
