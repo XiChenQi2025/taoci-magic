@@ -1,5 +1,6 @@
 // 答案之书模块主类
 import { getRandomAnswer } from './answer-data.js';
+import { cssLoader } from '../../utils/css-loader.js'; // 导入CSS加载工具
 
 export default class AnswerBookModule {
     constructor() {
@@ -16,8 +17,8 @@ export default class AnswerBookModule {
 
     async init(appContainer) {
         try {
-            // 1. 注入模块样式（采用与首页模块相同的逻辑）
-            this.loadStyles();
+            // 1. 注入模块样式（使用CSS加载工具）
+            await this.loadStyles();
             
             // 2. 渲染模块结构
             this.render(appContainer);
@@ -53,33 +54,70 @@ export default class AnswerBookModule {
         if (closeHistory) closeHistory.removeEventListener('click', this.toggleHistory);
         if (clearHistoryBtn) clearHistoryBtn.removeEventListener('click', this.clearHistory);
         
-        // 清理样式
-        const style = document.querySelector('link[href*="answer-book.css"]');
-        if (style) {
-            style.remove();
+        // 清理样式 - 使用CSS加载工具
+        cssLoader.unload('answer-book-styles');
+    }
+
+    async loadStyles() {
+        // 使用CSS加载工具加载样式
+        try {
+            await cssLoader.load(
+                'scripts/modules/answer-book/answer-book.css',
+                'answer-book-styles'
+            );
+        } catch (error) {
+            console.warn('CSS加载失败，使用回退样式:', error);
+            // 如果CSS加载失败，可以添加一些内联样式作为回退
+            this.addFallbackStyles();
         }
     }
 
-    loadStyles() {
-        // 检查是否已经加载了样式
-        const existingStyle = document.querySelector('link[href*="answer-book.css"]');
-        if (existingStyle) {
-            return;
-        }
-        
-        // 创建样式链接 - 采用与首页模块完全相同的逻辑
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        
-        // 动态调整CSS路径（与首页模块一致）
-        link.href = window.location.pathname.includes('modules') 
-            ? '../../answer-book.css'  // 如果当前在模块目录中
-            : 'scripts/modules/answer-book/answer-book.css';  // 相对于根目录
-        
-        link.id = 'answer-book-styles';
-        
-        // 添加到head
-        document.head.appendChild(link);
+    addFallbackStyles() {
+        // 添加基本的内联样式作为回退
+        const style = document.createElement('style');
+        style.id = 'answer-book-fallback-styles';
+        style.textContent = `
+            .answer-book-container {
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 2rem 1rem;
+                min-height: 100vh;
+            }
+            .book-title {
+                font-size: 3.5rem;
+                color: #B39DDB;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+            .book-container {
+                width: 300px;
+                height: 400px;
+                margin: 2rem auto;
+                background: linear-gradient(45deg, #1a1a2e, #16213e);
+                border-radius: 10px;
+            }
+            .answer-display {
+                background: rgba(255, 250, 240, 0.95);
+                border-radius: 10px;
+                padding: 2rem;
+                text-align: center;
+            }
+            .answer-text {
+                font-size: 2.2rem;
+                color: #333;
+                font-family: 'Georgia', serif;
+            }
+            .ask-button {
+                padding: 1rem 3rem;
+                font-size: 1.3rem;
+                border-radius: 30px;
+                background: linear-gradient(135deg, #CE93D8, #BA68C8);
+                color: white;
+                border: none;
+                cursor: pointer;
+            }
+        `;
+        document.head.appendChild(style);
     }
 
     render(container) {
