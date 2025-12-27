@@ -7,11 +7,11 @@ export default class AnswerBookModule {
         this.state = 'IDLE'; // IDLE, THINKING, REVEALING, SHOWING
         this.currentAnswer = '';
         this.answerHistory = [];
-        this.isHistoryExpanded = false;
+        this.isAccordionExpanded = false; // 改为手风琴状态
         
         // 绑定方法
         this.handleAskClick = this.handleAskClick.bind(this);
-        this.toggleHistoryExpansion = this.toggleHistoryExpansion.bind(this);
+        this.toggleAccordion = this.toggleAccordion.bind(this); // 改为手风琴方法
         this.clearHistory = this.clearHistory.bind(this);
     }
 
@@ -45,14 +45,14 @@ export default class AnswerBookModule {
 
     destroy() {
         // 清理事件监听
-        const cloud = document.querySelector('.cloud');
+        const cloudBg = document.querySelector('.cloud-bg');
         const askButton = document.querySelector('.ask-button');
-        const historyHeader = document.querySelector('.history-header');
+        const accordionHeader = document.querySelector('.accordion-header');
         const clearHistoryBtn = document.querySelector('.clear-history-btn');
         
-        if (cloud) cloud.removeEventListener('click', this.handleAskClick);
+        if (cloudBg) cloudBg.removeEventListener('click', this.handleAskClick);
         if (askButton) askButton.removeEventListener('click', this.handleAskClick);
-        if (historyHeader) historyHeader.removeEventListener('click', this.toggleHistoryExpansion);
+        if (accordionHeader) accordionHeader.removeEventListener('click', this.toggleAccordion);
         if (clearHistoryBtn) clearHistoryBtn.removeEventListener('click', this.clearHistory);
         
         // 清理样式
@@ -83,33 +83,30 @@ export default class AnswerBookModule {
                 background: #fff0f5;
                 text-align: center;
             }
-            .cloud {
+            .cloud-bg {
                 width: 300px;
-                height: 180px;
+                height: 200px;
                 margin: 1.5rem auto;
-                background: white;
-                border-radius: 50%;
                 position: relative;
             }
-            .cloud::before {
-                content: '';
+            .cloud {
                 position: absolute;
-                width: 100px;
-                height: 100px;
+                width: 100%;
+                height: 100%;
                 background: white;
                 border-radius: 50%;
-                top: -40px;
-                left: 50px;
             }
-            .cloud::after {
-                content: '';
+            .answer-display {
                 position: absolute;
-                width: 80px;
-                height: 80px;
-                background: white;
-                border-radius: 50%;
-                top: -30px;
-                right: 60px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 260px;
+                height: 160px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
             }
             .answer-text {
                 font-size: 1.5rem;
@@ -138,12 +135,17 @@ export default class AnswerBookModule {
                     <p class="book-subtitle">向魔法提问，获取你内心的答案</p>
                 </div>
                 
-                <!-- 云朵答案框 -->
-                <div class="cloud-container">
+                <!-- 云朵背景容器 -->
+                <div class="cloud-bg" id="cloud-bg">
                     <div class="cloud" id="cloud">
-                        <div class="answer-display" id="answer-display">
-                            <div class="answer-text" id="answer-text"></div>
-                        </div>
+                        <!-- 云朵细节 -->
+                        <div class="cloud-detail"></div>
+                        <div class="cloud-detail"></div>
+                    </div>
+                    
+                    <!-- 答案显示区域 -->
+                    <div class="answer-display" id="answer-display">
+                        <div class="answer-text" id="answer-text"></div>
                     </div>
                 </div>
                 
@@ -167,17 +169,17 @@ export default class AnswerBookModule {
                     </div>
                 </div>
                 
-                <!-- 历史记录区域 -->
-                <div class="history-section" id="history-section">
-                    <div class="history-header">
+                <!-- 历史记录手风琴 -->
+                <div class="history-accordion" id="history-accordion">
+                    <div class="accordion-header">
                         <div style="display: flex; align-items: center;">
-                            <h3 class="history-title">历史答案</h3>
-                            <span class="history-count" id="history-count">0</span>
+                            <h3 class="accordion-title">历史答案</h3>
+                            <span class="accordion-count" id="accordion-count">0</span>
                         </div>
-                        <div class="history-toggle-icon">▼</div>
+                        <div class="accordion-icon">▼</div>
                     </div>
                     
-                    <div class="history-list-container" id="history-list-container">
+                    <div class="accordion-content" id="accordion-content">
                         <ul class="history-list" id="history-list"></ul>
                         <button class="clear-history-btn" id="clear-history-btn">清空历史</button>
                     </div>
@@ -186,16 +188,17 @@ export default class AnswerBookModule {
         `;
         
         // 保存重要元素的引用
+        this.cloudBg = container.querySelector('#cloud-bg');
         this.cloud = container.querySelector('#cloud');
         this.answerDisplay = container.querySelector('#answer-display');
         this.answerText = container.querySelector('#answer-text');
         this.statusIndicator = container.querySelector('#status-indicator');
         this.askButton = container.querySelector('#ask-button');
-        this.historySection = container.querySelector('#history-section');
+        this.historyAccordion = container.querySelector('#history-accordion');
         this.historyList = container.querySelector('#history-list');
-        this.historyListContainer = container.querySelector('#history-list-container');
-        this.historyHeader = container.querySelector('.history-header');
-        this.historyCount = document.querySelector('#history-count');
+        this.accordionContent = container.querySelector('#accordion-content');
+        this.accordionHeader = container.querySelector('.accordion-header');
+        this.accordionCount = document.querySelector('#accordion-count');
         this.clearHistoryBtn = document.querySelector('#clear-history-btn');
     }
 
@@ -298,7 +301,7 @@ export default class AnswerBookModule {
     }
 
     createSearchingStars() {
-        const cloudRect = this.cloud.getBoundingClientRect();
+        const cloudRect = this.cloudBg.getBoundingClientRect();
         const centerX = cloudRect.left + cloudRect.width / 2;
         const centerY = cloudRect.top + cloudRect.height / 2;
         
@@ -342,7 +345,7 @@ export default class AnswerBookModule {
 
     stopSearchingStars() {
         // 星星聚集到云朵中心
-        const cloudRect = this.cloud.getBoundingClientRect();
+        const cloudRect = this.cloudBg.getBoundingClientRect();
         const centerX = cloudRect.left + cloudRect.width / 2;
         const centerY = cloudRect.top + cloudRect.height / 2;
         
@@ -418,9 +421,9 @@ export default class AnswerBookModule {
     }
 
     bindEvents() {
-        // 云朵点击事件
-        if (this.cloud) {
-            this.cloud.addEventListener('click', this.handleAskClick);
+        // 云朵背景点击事件
+        if (this.cloudBg) {
+            this.cloudBg.addEventListener('click', this.handleAskClick);
         }
         
         // 按钮点击事件
@@ -428,9 +431,9 @@ export default class AnswerBookModule {
             this.askButton.addEventListener('click', this.handleAskClick);
         }
         
-        // 历史记录展开/收起
-        if (this.historyHeader) {
-            this.historyHeader.addEventListener('click', this.toggleHistoryExpansion);
+        // 手风琴展开/收起
+        if (this.accordionHeader) {
+            this.accordionHeader.addEventListener('click', this.toggleAccordion);
         }
         
         // 清空历史记录
@@ -514,8 +517,8 @@ export default class AnswerBookModule {
         this.updateHistoryCount();
         
         // 如果历史记录是收起的，自动展开
-        if (!this.isHistoryExpanded) {
-            this.toggleHistoryExpansion();
+        if (!this.isAccordionExpanded) {
+            this.toggleAccordion();
         }
     }
 
@@ -540,8 +543,8 @@ export default class AnswerBookModule {
     }
 
     updateHistoryCount() {
-        if (this.historyCount) {
-            this.historyCount.textContent = this.answerHistory.length;
+        if (this.accordionCount) {
+            this.accordionCount.textContent = this.answerHistory.length;
         }
     }
 
@@ -554,21 +557,21 @@ export default class AnswerBookModule {
         }
     }
 
-    toggleHistoryExpansion() {
-        this.isHistoryExpanded = !this.isHistoryExpanded;
+    toggleAccordion() {
+        this.isAccordionExpanded = !this.isAccordionExpanded;
         
-        const toggleIcon = document.querySelector('.history-toggle-icon');
-        const listContainer = this.historyListContainer;
+        const accordionIcon = document.querySelector('.accordion-icon');
+        const accordionContent = this.accordionContent;
         
-        if (this.isHistoryExpanded) {
-            listContainer.classList.add('expanded');
-            if (toggleIcon) {
-                toggleIcon.classList.add('expanded');
+        if (this.isAccordionExpanded) {
+            accordionContent.classList.add('expanded');
+            if (accordionIcon) {
+                accordionIcon.classList.add('expanded');
             }
         } else {
-            listContainer.classList.remove('expanded');
-            if (toggleIcon) {
-                toggleIcon.classList.remove('expanded');
+            accordionContent.classList.remove('expanded');
+            if (accordionIcon) {
+                accordionIcon.classList.remove('expanded');
             }
         }
     }
