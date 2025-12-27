@@ -16,8 +16,8 @@ export default class AnswerBookModule {
 
     async init(appContainer) {
         try {
-            // 1. 注入模块样式
-            this.injectStyles();
+            // 1. 注入模块样式（采用与首页模块相同的逻辑）
+            this.loadStyles();
             
             // 2. 渲染模块结构
             this.render(appContainer);
@@ -54,23 +54,32 @@ export default class AnswerBookModule {
         if (clearHistoryBtn) clearHistoryBtn.removeEventListener('click', this.clearHistory);
         
         // 清理样式
-        const style = document.getElementById('answer-book-styles');
-        if (style) style.remove();
-        
-        const link = document.getElementById('answer-book-styles-external');
-        if (link) link.remove();
+        const style = document.querySelector('link[href*="answer-book.css"]');
+        if (style) {
+            style.remove();
+        }
     }
 
-    injectStyles() {
-        // 检查是否已注入样式
-        if (!document.getElementById('answer-book-styles-external')) {
-            // 动态加载外部CSS文件（使用主骨架的模块样式路径）
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = '/styles/modules/answer-book.css'; // 修正为正确的路径
-            link.id = 'answer-book-styles-external';
-            document.head.appendChild(link);
+    loadStyles() {
+        // 检查是否已经加载了样式
+        const existingStyle = document.querySelector('link[href*="answer-book.css"]');
+        if (existingStyle) {
+            return;
         }
+        
+        // 创建样式链接 - 采用与首页模块完全相同的逻辑
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        
+        // 动态调整CSS路径（与首页模块一致）
+        link.href = window.location.pathname.includes('modules') 
+            ? '../../answer-book.css'  // 如果当前在模块目录中
+            : 'scripts/modules/answer-book/answer-book.css';  // 相对于根目录
+        
+        link.id = 'answer-book-styles';
+        
+        // 添加到head
+        document.head.appendChild(link);
     }
 
     render(container) {
