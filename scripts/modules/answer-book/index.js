@@ -81,38 +81,38 @@ export default class AnswerBookModule {
                 margin: 0 auto;
                 padding: 2rem 1rem;
                 min-height: 100vh;
-                background: #1a1a2e;
-                color: white;
+                background: #fff0f5;
             }
             .book-title {
-                font-size: 3rem;
+                font-size: 2.8rem;
                 text-align: center;
-                margin-bottom: 1rem;
-                color: #B39DDB;
+                margin-bottom: 0.5rem;
+                color: #F48FB1;
             }
             .book-container {
-                width: 280px;
-                height: 380px;
-                margin: 2rem auto;
-                background: #2a273c;
-                border-radius: 15px;
+                width: 260px;
+                height: 360px;
+                margin: 1.5rem auto;
+                background: #fff;
+                border-radius: 12px;
+                border: 1px solid #F48FB1;
             }
             .answer-display {
-                background: #fffaf0;
-                border-radius: 12px;
-                padding: 2rem;
+                background: #fff;
+                border-radius: 10px;
+                padding: 1.5rem;
                 text-align: center;
             }
             .answer-text {
-                font-size: 1.8rem;
+                font-size: 1.6rem;
                 color: #333;
                 font-family: 'Georgia', serif;
             }
             .ask-button {
-                width: 80px;
-                height: 80px;
+                width: 70px;
+                height: 70px;
                 border-radius: 50%;
-                background: linear-gradient(135deg, #B39DDB, #90CAF9);
+                background: linear-gradient(135deg, #F48FB1, #90CAF9);
                 color: white;
                 border: none;
                 cursor: pointer;
@@ -132,7 +132,7 @@ export default class AnswerBookModule {
                 
                 <!-- 标题区域 -->
                 <div class="book-header">
-                    <h1 class="book-title">魔法答案之书</h1>
+                    <h1 class="book-title">答案之书</h1>
                     <p class="book-subtitle">向魔法提问，获取你内心的答案</p>
                     <p class="book-disclaimer">答案仅供参考，最终的选择在你心中</p>
                 </div>
@@ -152,7 +152,7 @@ export default class AnswerBookModule {
                     </div>
                 </div>
                 
-                <!-- 状态指示器 -->
+                <!-- 状态提示 -->
                 <div class="status-indicator" id="status-indicator">
                     准备好了吗？点击魔法球或书本开始
                 </div>
@@ -170,7 +170,7 @@ export default class AnswerBookModule {
                 <div class="history-section" id="history-section">
                     <div class="history-header">
                         <div style="display: flex; align-items: center;">
-                            <h3 class="history-title">答案回忆</h3>
+                            <h3 class="history-title">历史答案</h3>
                             <span class="history-count" id="history-count">0</span>
                         </div>
                         <div class="history-toggle-icon">▼</div>
@@ -178,7 +178,7 @@ export default class AnswerBookModule {
                     
                     <div class="history-list-container" id="history-list-container">
                         <ul class="history-list" id="history-list"></ul>
-                        <button class="clear-history-btn" id="clear-history-btn">清空回忆</button>
+                        <button class="clear-history-btn" id="clear-history-btn">清空历史</button>
                     </div>
                 </div>
             </div>
@@ -196,7 +196,7 @@ export default class AnswerBookModule {
         this.historyList = container.querySelector('#history-list');
         this.historyListContainer = container.querySelector('#history-list-container');
         this.historyHeader = container.querySelector('.history-header');
-        this.historyCount = container.querySelector('#history-count');
+        this.historyCount = document.querySelector('#history-count');
         this.clearHistoryBtn = document.querySelector('#clear-history-btn');
     }
 
@@ -303,7 +303,7 @@ export default class AnswerBookModule {
         this.particleContainer.innerHTML = '';
         
         // 创建星光粒子
-        const particleCount = 30;
+        const particleCount = 25;
         
         for (let i = 0; i < particleCount; i++) {
             const particle = document.createElement('div');
@@ -345,7 +345,7 @@ export default class AnswerBookModule {
             const distance = Math.sqrt(
                 Math.pow(targetX - startX, 2) + Math.pow(targetY - startY, 2)
             );
-            const duration = Math.min(distance / 100, 3); // 最大3秒
+            const duration = Math.min(distance / 100, 2.5); // 最大2.5秒
             
             // 粒子动画
             particle.animate([
@@ -425,13 +425,13 @@ export default class AnswerBookModule {
         const centerY = bookRect.top + bookRect.height / 2;
         
         // 创建向中心聚集的粒子
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 15; i++) {
             const particle = document.createElement('div');
             particle.className = 'star-particle';
             
             // 从书本周围随机位置开始
             const angle = Math.random() * Math.PI * 2;
-            const distance = 80 + Math.random() * 80;
+            const distance = 60 + Math.random() * 60;
             const startX = centerX + Math.cos(angle) * distance;
             const startY = centerY + Math.sin(angle) * distance;
             
@@ -451,7 +451,7 @@ export default class AnswerBookModule {
                     opacity: 0
                 }
             ], {
-                duration: 500,
+                duration: 400,
                 easing: 'ease-in',
                 delay: i * 10
             });
@@ -461,7 +461,7 @@ export default class AnswerBookModule {
                 if (particle.parentNode) {
                     particle.remove();
                 }
-            }, 1000);
+            }, 800);
         }
     }
 
@@ -474,7 +474,7 @@ export default class AnswerBookModule {
         
         // 逐字显示答案
         const chars = answer.split('');
-        const delay = 80; // 每个字符的显示延迟
+        const delay = 70; // 每个字符的显示延迟
         
         for (let i = 0; i < chars.length; i++) {
             const charSpan = document.createElement('span');
@@ -493,14 +493,14 @@ export default class AnswerBookModule {
                 charSpan.animate([
                     {
                         opacity: 0,
-                        transform: 'translateY(10px)'
+                        transform: 'translateY(8px)'
                     },
                     {
                         opacity: 1,
                         transform: 'translateY(0)'
                     }
                 ], {
-                    duration: 300,
+                    duration: 250,
                     easing: 'ease-out',
                     fill: 'forwards'
                 });
@@ -509,7 +509,7 @@ export default class AnswerBookModule {
         
         // 等待动画完成
         await new Promise(resolve => {
-            setTimeout(resolve, chars.length * delay + 500);
+            setTimeout(resolve, chars.length * delay + 400);
         });
     }
 
@@ -601,7 +601,7 @@ export default class AnswerBookModule {
         if (this.answerHistory.length === 0) {
             this.historyList.innerHTML = `
                 <li class="no-history">
-                    还没有答案回忆，点击上方按钮开始提问
+                    还没有历史答案，点击上方按钮开始提问
                 </li>
             `;
             return;
@@ -622,7 +622,7 @@ export default class AnswerBookModule {
     }
 
     clearHistory() {
-        if (confirm('确定要清空所有答案回忆吗？')) {
+        if (confirm('确定要清空所有历史答案吗？')) {
             this.answerHistory = [];
             this.saveHistory();
             this.renderHistory();
