@@ -1,158 +1,79 @@
-// 答案之书v2.0 - 梦幻粉色重构版
+// 答案之书模块重构版主类
 import { getRandomAnswer } from './answer-data.js';
-import { cssLoader } from '../../utils/css-loader.js'; // 导入CSS加载工具
 
 export default class AnswerBookModule {
     constructor() {
         this.state = 'IDLE'; // IDLE, THINKING, REVEALING, SHOWING
         this.currentAnswer = '';
         this.answerHistory = [];
-        this.isHistoryOpen = false;
         this.isHistoryExpanded = false;
-        this.waitingTexts = [
-            "魔法正在凝聚能量...",
-            "答案正在显现中...",
-            "宇宙正在回应你的问题...",
-            "神秘力量正在书写答案..."
-        ];
         
         // 绑定方法
         this.handleAskClick = this.handleAskClick.bind(this);
-        this.toggleHistoryExpansion = this.toggleHistoryExpansion.bind(this);
+        this.toggleHistory = this.toggleHistory.bind(this);
         this.clearHistory = this.clearHistory.bind(this);
     }
 
-    async init(appContainer) {
+    init(container) {
         try {
-            // 1. 注入模块样式
-            await this.loadStyles();
+            // 渲染模块结构
+            this.render(container);
             
-            // 2. 渲染模块结构
-            this.render(appContainer);
-            
-            // 3. 加载历史记录
+            // 加载历史记录
             this.loadHistory();
             
-            // 4. 绑定事件
+            // 绑定事件
             this.bindEvents();
             
-            // 5. 创建魔法粒子背景
-            this.createMagicParticles();
+            // 恢复历史记录展开状态
+            this.restoreHistoryState();
             
         } catch (error) {
             console.error('答案之书模块初始化失败:', error);
-            appContainer.innerHTML = `
-                <div class="card" style="background: rgba(255,255,255,0.9); padding: 2rem; border-radius: 20px; text-align: center;">
-                    <h2 style="color: #F48FB1; margin-bottom: 1rem;">答案之书加载失败</h2>
+            container.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <h2 style="color: #FF6B9D;">答案之书加载失败</h2>
                     <p style="color: #666;">魔法暂时失效了，请刷新页面重试</p>
                 </div>
             `;
         }
     }
 
-    destroy() {
-        // 清理事件监听
-        const askButton = document.querySelector('.ask-button');
-        const historyHeader = document.querySelector('.history-header');
-        const clearHistoryBtn = document.querySelector('.clear-history-btn');
-        
-        if (askButton) askButton.removeEventListener('click', this.handleAskClick);
-        if (historyHeader) historyHeader.removeEventListener('click', this.toggleHistoryExpansion);
-        if (clearHistoryBtn) clearHistoryBtn.removeEventListener('click', this.clearHistory);
-        
-        // 清理样式
-        cssLoader.unload('answer-book-styles');
-        
-        // 清理粒子动画
-        this.clearParticles();
-    }
-
-    async loadStyles() {
-        // 使用CSS加载工具加载样式
-        try {
-            await cssLoader.load(
-                'scripts/modules/answer-book/answer-book.css',
-                'answer-book-styles'
-            );
-        } catch (error) {
-            console.warn('CSS加载失败，使用回退样式:', error);
-            this.addFallbackStyles();
-        }
-    }
-
-    addFallbackStyles() {
-        // 添加基本的内联样式作为回退
-        const style = document.createElement('style');
-        style.id = 'answer-book-fallback-styles';
-        style.textContent = `
-            .answer-book-container {
-                max-width: 900px;
-                margin: 0 auto;
-                padding: 2rem 1rem;
-                min-height: 100vh;
-                background: linear-gradient(135deg, #FFE4E9, #FFD1DC);
-            }
-            .book-title {
-                font-size: 3rem;
-                text-align: center;
-                margin-bottom: 1rem;
-                color: #F48FB1;
-            }
-            .magic-crystal-ball {
-                width: 300px;
-                height: 300px;
-                border-radius: 50%;
-                background: radial-gradient(circle at 30% 30%, white, #FFB6C1);
-                box-shadow: 0 0 50px rgba(244, 143, 177, 0.5);
-                margin: 2rem auto;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .answer-text {
-                font-size: 1.8rem;
-                color: #333;
-                font-family: 'Georgia', serif;
-                text-align: center;
-                padding: 1rem;
-            }
-            .ask-button {
-                width: 100px;
-                height: 100px;
-                border-radius: 50%;
-                background: linear-gradient(135deg, #F48FB1, #FF8E53);
-                color: white;
-                border: none;
-                cursor: pointer;
-                font-size: 1.3rem;
-                font-weight: bold;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
     render(container) {
         container.innerHTML = `
+            <!-- 背景花纹 -->
+            <div class="answer-book-bg">
+                <div class="bg-pattern"></div>
+                <div class="floating-star"></div>
+                <div class="floating-star"></div>
+                <div class="floating-star"></div>
+                <div class="floating-star"></div>
+            </div>
+            
+            <!-- 主容器 -->
             <div class="answer-book-container">
                 <!-- 标题区域 -->
-                <div class="book-header">
-                    <h1 class="book-title">答案之书</h1>
-                    <p class="book-subtitle">在这里，向宇宙提问，倾听内心的声音。让魔法为你揭示隐藏的答案。</p>
-                    <p class="book-disclaimer">请记住：答案仅供参考，真正的选择永远在你心中。相信自己的直觉，勇敢前行。</p>
+                <div class="title-section">
+                    <h1 class="main-title">答案之书</h1>
+                    <p class="subtitle">向魔法提问，获取你内心的答案</p>
+                    <p class="disclaimer">答案仅供参考，最终的选择在你心中</p>
                 </div>
                 
-                <!-- 答案展示区域 -->
-                <div class="answer-display-container">
-                    <div class="magic-crystal-ball">
-                        <div class="answer-display" id="answer-display">
-                            <div class="answer-text" id="answer-text">
-                                <div class="waiting-text" id="waiting-text">
-                                    准备好你的问题
-                                    <div class="waiting-dots">
-                                        <span></span>
-                                        <span></span>
-                                        <span></span>
-                                    </div>
+                <!-- 答案展示框 -->
+                <div class="answer-card">
+                    <div class="card-corner tl"></div>
+                    <div class="card-corner tr"></div>
+                    <div class="card-corner bl"></div>
+                    <div class="card-corner br"></div>
+                    
+                    <div class="answer-text-container">
+                        <div class="answer-text" id="answer-text">
+                            <div class="waiting-text">
+                                <span>准备接受魔法的指引</span>
+                                <div class="thinking-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
                                 </div>
                             </div>
                         </div>
@@ -161,30 +82,36 @@ export default class AnswerBookModule {
                 
                 <!-- 状态提示 -->
                 <div class="status-indicator" id="status-indicator">
-                    集中精神，思考你的问题，然后点击魔法球
+                    点击魔法按钮，向答案之书提问
                 </div>
                 
-                <!-- 控制按钮 -->
-                <div class="book-controls">
+                <!-- 获取答案按钮 -->
+                <div class="ask-button-container">
                     <button class="ask-button" id="ask-button">
-                        <span class="button-text">提问</span>
-                        <div class="button-loader"></div>
+                        <div class="ripple">
+                            <div class="ripple-wave"></div>
+                            <div class="ripple-wave"></div>
+                            <div class="ripple-wave"></div>
+                        </div>
+                        <span class="button-text">魔法提问</span>
+                        <div class="loading-spinner"></div>
                     </button>
-                    <div class="action-tip">点击上方魔法球也可以获取答案</div>
                 </div>
                 
                 <!-- 历史记录区域 -->
-                <div class="history-section" id="history-section">
-                    <div class="history-header">
-                        <div style="display: flex; align-items: center;">
-                            <h3 class="history-title">历史答案</h3>
+                <div class="history-container" id="history-container">
+                    <div class="history-header" id="history-header">
+                        <div class="history-title">
+                            <span>历史答案</span>
                             <span class="history-count" id="history-count">0</span>
                         </div>
-                        <div class="history-toggle-icon">▼</div>
+                        <div class="toggle-icon" id="toggle-icon">▼</div>
                     </div>
                     
-                    <div class="history-list-container" id="history-list-container">
-                        <ul class="history-list" id="history-list"></ul>
+                    <div class="history-content" id="history-content">
+                        <ul class="history-list" id="history-list">
+                            <!-- 历史记录会动态生成 -->
+                        </ul>
                         <button class="clear-history-btn" id="clear-history-btn">清空历史记录</button>
                     </div>
                 </div>
@@ -192,96 +119,15 @@ export default class AnswerBookModule {
         `;
         
         // 保存重要元素的引用
-        this.crystalBall = container.querySelector('.magic-crystal-ball');
-        this.answerDisplay = container.querySelector('#answer-display');
-        this.answerText = container.querySelector('#answer-text');
-        this.waitingText = container.querySelector('#waiting-text');
-        this.statusIndicator = container.querySelector('#status-indicator');
-        this.askButton = container.querySelector('#ask-button');
-        this.historySection = container.querySelector('#history-section');
-        this.historyList = container.querySelector('#history-list');
-        this.historyListContainer = container.querySelector('#history-list-container');
-        this.historyHeader = container.querySelector('.history-header');
-        this.historyCount = document.querySelector('#history-count');
-        this.clearHistoryBtn = document.querySelector('#clear-history-btn');
-    }
-
-    createMagicParticles() {
-        this.particleContainer = document.createElement('div');
-        this.particleContainer.className = 'particle-container';
-        this.particleContainer.style.position = 'fixed';
-        this.particleContainer.style.top = '0';
-        this.particleContainer.style.left = '0';
-        this.particleContainer.style.width = '100%';
-        this.particleContainer.style.height = '100%';
-        this.particleContainer.style.pointerEvents = 'none';
-        this.particleContainer.style.zIndex = '1';
-        
-        document.querySelector('.answer-book-container').appendChild(this.particleContainer);
-        
-        // 创建初始粒子
-        for (let i = 0; i < 20; i++) {
-            setTimeout(() => this.createParticle(), i * 300);
-        }
-        
-        // 持续创建粒子
-        this.particleInterval = setInterval(() => {
-            if (document.contains(this.particleContainer)) {
-                this.createParticle();
-            }
-        }, 800);
-    }
-
-    createParticle() {
-        if (!this.particleContainer) return;
-        
-        const particle = document.createElement('div');
-        particle.className = 'magic-particle';
-        
-        // 随机大小
-        const size = Math.random() * 6 + 3;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        
-        // 随机起始位置
-        const startX = Math.random() * window.innerWidth;
-        particle.style.left = `${startX}px`;
-        particle.style.top = `${window.innerHeight + 20}px`;
-        
-        // 随机颜色
-        const colors = [
-            'rgba(255, 182, 193, 0.9)',
-            'rgba(255, 105, 180, 0.8)',
-            'rgba(255, 192, 203, 0.7)',
-            'rgba(255, 160, 122, 0.6)',
-            'rgba(255, 255, 255, 0.9)'
-        ];
-        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-        
-        // 随机动画参数
-        const duration = Math.random() * 3 + 2;
-        const delay = Math.random() * 2;
-        const endX = startX + (Math.random() * 100 - 50);
-        
-        particle.style.animation = `magic-float ${duration}s ease-in-out ${delay}s infinite`;
-        
-        this.particleContainer.appendChild(particle);
-        
-        // 移除粒子
-        setTimeout(() => {
-            if (particle.parentNode) {
-                particle.remove();
-            }
-        }, (duration + delay) * 1000);
-    }
-
-    clearParticles() {
-        if (this.particleInterval) {
-            clearInterval(this.particleInterval);
-        }
-        if (this.particleContainer && this.particleContainer.parentNode) {
-            this.particleContainer.remove();
-        }
+        this.answerText = document.getElementById('answer-text');
+        this.statusIndicator = document.getElementById('status-indicator');
+        this.askButton = document.getElementById('ask-button');
+        this.historyList = document.getElementById('history-list');
+        this.historyCount = document.getElementById('history-count');
+        this.historyContent = document.getElementById('history-content');
+        this.toggleIcon = document.getElementById('toggle-icon');
+        this.historyHeader = document.getElementById('history-header');
+        this.clearHistoryBtn = document.getElementById('clear-history-btn');
     }
 
     async handleAskClick() {
@@ -294,25 +140,22 @@ export default class AnswerBookModule {
         // 进入思考状态
         this.setState('THINKING');
         
-        // 1. 增强魔法球效果
-        this.enhanceCrystalBall();
+        // 等待2秒模拟思考过程
+        await this.wait(2000);
         
-        // 2. 随机显示等待文本
-        await this.showWaitingText();
-        
-        // 3. 获取随机答案
+        // 获取随机答案
         this.currentAnswer = getRandomAnswer();
         
-        // 4. 进入揭示状态
+        // 进入揭示状态
         this.setState('REVEALING');
         
-        // 5. 播放答案揭示动画
+        // 播放答案揭示动画
         await this.playRevealAnimation(this.currentAnswer);
         
-        // 6. 进入显示状态
+        // 进入显示状态
         this.setState('SHOWING');
         
-        // 7. 保存到历史记录
+        // 保存到历史记录
         this.addToHistory(this.currentAnswer);
     }
 
@@ -322,27 +165,23 @@ export default class AnswerBookModule {
         // 更新UI状态
         switch (newState) {
             case 'IDLE':
-                this.statusIndicator.textContent = '集中精神，思考你的问题，然后点击魔法球';
-                this.statusIndicator.className = 'status-indicator';
+                this.statusIndicator.textContent = '点击魔法按钮，向答案之书提问';
                 this.askButton.disabled = false;
                 this.askButton.classList.remove('loading');
-                this.askButton.querySelector('.button-text').textContent = '提问';
                 break;
                 
             case 'THINKING':
-                this.statusIndicator.textContent = '魔法正在运作，请保持专注...';
-                this.statusIndicator.className = 'status-indicator thinking';
+                this.statusIndicator.textContent = '魔法书正在翻阅中，请稍候...';
                 this.askButton.disabled = true;
                 this.askButton.classList.add('loading');
                 break;
                 
             case 'REVEALING':
-                this.statusIndicator.textContent = '答案正在显现...';
+                this.statusIndicator.textContent = '魔法答案正在显现...';
                 break;
                 
             case 'SHOWING':
-                this.statusIndicator.textContent = '这是宇宙给你的答案';
-                this.statusIndicator.className = 'status-indicator';
+                this.statusIndicator.textContent = '这是魔法书给你的答案';
                 this.askButton.disabled = false;
                 this.askButton.classList.remove('loading');
                 this.askButton.querySelector('.button-text').textContent = '再次提问';
@@ -350,54 +189,31 @@ export default class AnswerBookModule {
         }
     }
 
-    enhanceCrystalBall() {
-        // 增强魔法球的光效
-        this.crystalBall.style.animation = 'crystal-float 1s ease-in-out infinite alternate';
-        this.crystalBall.style.boxShadow = 
-            'inset 0 0 80px rgba(255, 255, 255, 0.9), ' +
-            'inset 0 0 120px rgba(255, 182, 193, 0.7), ' +
-            '0 0 120px rgba(244, 143, 177, 0.8), ' +
-            '0 0 180px rgba(244, 143, 177, 0.6), ' +
-            '0 0 0 25px rgba(255, 255, 255, 0.3)';
+    wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    async showWaitingText() {
-        // 隐藏之前的答案
-        const answerChars = this.answerText.querySelectorAll('.char');
-        answerChars.forEach(char => char.remove());
+    async playRevealAnimation(answer) {
+        // 清空答案文本
+        this.answerText.innerHTML = '';
         
-        // 显示等待文本
-        this.waitingText.style.display = 'flex';
-        
-        // 随机选择一个等待文本
-        const randomText = this.waitingTexts[Math.floor(Math.random() * this.waitingTexts.length)];
-        this.waitingText.innerHTML = `
-            ${randomText}
-            <div class="waiting-dots">
+        // 显示等待状态
+        const waitingDiv = document.createElement('div');
+        waitingDiv.className = 'waiting-text';
+        waitingDiv.innerHTML = `
+            <span>魔法书正在翻阅中</span>
+            <div class="thinking-dots">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
         `;
+        this.answerText.appendChild(waitingDiv);
         
-        // 等待3秒
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // 等待1秒
+        await this.wait(1000);
         
-        // 隐藏等待文本
-        this.waitingText.style.display = 'none';
-    }
-
-    async playRevealAnimation(answer) {
-        // 恢复魔法球正常状态
-        this.crystalBall.style.animation = 'crystal-float 6s ease-in-out infinite';
-        this.crystalBall.style.boxShadow = 
-            'inset 0 0 60px rgba(255, 255, 255, 0.8), ' +
-            'inset 0 0 100px rgba(255, 182, 193, 0.5), ' +
-            '0 0 80px rgba(244, 143, 177, 0.6), ' +
-            '0 0 120px rgba(244, 143, 177, 0.4), ' +
-            '0 0 0 15px rgba(255, 255, 255, 0.2)';
-        
-        // 清空答案文本
+        // 清空并开始显示答案
         this.answerText.innerHTML = '';
         
         // 逐字显示答案
@@ -418,22 +234,17 @@ export default class AnswerBookModule {
             
             // 字符显示动画
             setTimeout(() => {
-                charSpan.style.animation = 'char-float 0.8s ease forwards';
+                charSpan.style.animation = `char-appear 0.3s ease forwards`;
             }, i * delay);
         }
         
         // 等待动画完成
         await new Promise(resolve => {
-            setTimeout(resolve, chars.length * delay + 500);
+            setTimeout(resolve, chars.length * delay + 300);
         });
     }
 
     bindEvents() {
-        // 魔法球点击事件
-        if (this.crystalBall) {
-            this.crystalBall.addEventListener('click', this.handleAskClick);
-        }
-        
         // 按钮点击事件
         if (this.askButton) {
             this.askButton.addEventListener('click', this.handleAskClick);
@@ -441,7 +252,7 @@ export default class AnswerBookModule {
         
         // 历史记录展开/收起
         if (this.historyHeader) {
-            this.historyHeader.addEventListener('click', this.toggleHistoryExpansion);
+            this.historyHeader.addEventListener('click', this.toggleHistory);
         }
         
         // 清空历史记录
@@ -452,16 +263,30 @@ export default class AnswerBookModule {
 
     // 历史记录功能
     loadHistory() {
-        const savedHistory = localStorage.getItem('taoci_answer_history_v2');
+        const savedHistory = localStorage.getItem('answer_book_history');
         if (savedHistory) {
             this.answerHistory = JSON.parse(savedHistory);
             this.renderHistory();
             this.updateHistoryCount();
         }
+        
+        // 加载历史记录展开状态
+        const historyState = localStorage.getItem('answer_book_history_expanded');
+        if (historyState) {
+            this.isHistoryExpanded = historyState === 'true';
+        }
+    }
+
+    restoreHistoryState() {
+        if (this.isHistoryExpanded) {
+            this.historyContent.classList.add('expanded');
+            this.toggleIcon.classList.add('expanded');
+        }
     }
 
     saveHistory() {
-        localStorage.setItem('taoci_answer_history_v2', JSON.stringify(this.answerHistory));
+        localStorage.setItem('answer_book_history', JSON.stringify(this.answerHistory));
+        localStorage.setItem('answer_book_history_expanded', JSON.stringify(this.isHistoryExpanded));
     }
 
     addToHistory(answer) {
@@ -471,8 +296,7 @@ export default class AnswerBookModule {
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
+                minute: '2-digit'
             })
         };
         
@@ -489,7 +313,7 @@ export default class AnswerBookModule {
         
         // 如果历史记录是收起的，自动展开
         if (!this.isHistoryExpanded) {
-            this.toggleHistoryExpansion();
+            this.toggleHistory();
         }
     }
 
@@ -499,7 +323,7 @@ export default class AnswerBookModule {
         if (this.answerHistory.length === 0) {
             this.historyList.innerHTML = `
                 <li class="no-history">
-                    还没有历史答案，点击上方魔法球开始提问
+                    还没有历史答案，点击上方按钮开始提问
                 </li>
             `;
             return;
@@ -525,36 +349,36 @@ export default class AnswerBookModule {
             this.saveHistory();
             this.renderHistory();
             this.updateHistoryCount();
-            
-            // 显示提示
-            this.statusIndicator.textContent = '历史记录已清空';
-            this.statusIndicator.style.background = 'rgba(255, 100, 100, 0.2)';
-            this.statusIndicator.style.borderColor = 'rgba(255, 100, 100, 0.4)';
-            
-            setTimeout(() => {
-                this.statusIndicator.textContent = '这是宇宙给你的答案';
-                this.statusIndicator.style.background = '';
-                this.statusIndicator.style.borderColor = '';
-            }, 2000);
         }
     }
 
-    toggleHistoryExpansion() {
+    toggleHistory() {
         this.isHistoryExpanded = !this.isHistoryExpanded;
         
-        const toggleIcon = document.querySelector('.history-toggle-icon');
-        const listContainer = this.historyListContainer;
-        
         if (this.isHistoryExpanded) {
-            listContainer.classList.add('expanded');
-            if (toggleIcon) {
-                toggleIcon.classList.add('expanded');
-            }
+            this.historyContent.classList.add('expanded');
+            this.toggleIcon.classList.add('expanded');
         } else {
-            listContainer.classList.remove('expanded');
-            if (toggleIcon) {
-                toggleIcon.classList.remove('expanded');
-            }
+            this.historyContent.classList.remove('expanded');
+            this.toggleIcon.classList.remove('expanded');
+        }
+        
+        // 保存展开状态
+        localStorage.setItem('answer_book_history_expanded', JSON.stringify(this.isHistoryExpanded));
+    }
+
+    destroy() {
+        // 清理事件监听
+        if (this.askButton) {
+            this.askButton.removeEventListener('click', this.handleAskClick);
+        }
+        
+        if (this.historyHeader) {
+            this.historyHeader.removeEventListener('click', this.toggleHistory);
+        }
+        
+        if (this.clearHistoryBtn) {
+            this.clearHistoryBtn.removeEventListener('click', this.clearHistory);
         }
     }
 }
