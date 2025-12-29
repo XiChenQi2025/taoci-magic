@@ -66,6 +66,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    perspective: 1200px; /* 添加透视，用于3D效果 */
 }
 
 .character-container {
@@ -87,6 +88,17 @@
     align-items: center;
     justify-content: center;
     position: relative;
+    transform-style: preserve-3d; /* 启用3D变换 */
+    transition: transform 0.3s ease;
+}
+
+/* 悬停时的伪3D效果 */
+.character-container:hover {
+    transform: rotateY(5deg) rotateX(2deg) scale(1.02);
+    box-shadow: 
+        0 15px 40px rgba(244, 143, 177, 0.5),
+        0 0 0 2px rgba(255, 255, 255, 0.95) inset,
+        0 0 50px rgba(244, 143, 177, 0.6);
 }
 
 /* 粉色泛光背景层 */
@@ -104,31 +116,59 @@
     filter: blur(20px);
     z-index: -1;
     animation: pulse-glow 3s ease-in-out infinite;
+    transform: translateZ(-10px); /* 添加深度 */
 }
 
 @keyframes pulse-glow {
     0%, 100% {
         opacity: 0.5;
-        transform: scale(1);
+        transform: translateZ(-10px) scale(1);
     }
     50% {
         opacity: 0.8;
-        transform: scale(1.05);
+        transform: translateZ(-10px) scale(1.05);
     }
 }
 
+/* 添加3D阴影效果 */
+.character-container::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(135deg, 
+        rgba(244, 143, 177, 0.2) 0%,
+        transparent 50%);
+    filter: blur(15px);
+    z-index: -2;
+    opacity: 0.5;
+    transform: translateZ(-20px); /* 更深的深度 */
+    transition: transform 0.3s ease;
+}
+
+.character-container:hover::after {
+    transform: translateZ(-30px) translateX(10px);
+    opacity: 0.7;
+}
+
 .character-image {
-    width: 100%;
-    height: 100%;
+    width: 90%;
+    height: 90%;
     object-fit: contain; /* 保持比例，避免拉伸 */
     border-radius: 16px;
     position: relative;
     z-index: 1;
-    transition: transform 0.3s ease;
+    transition: all 0.5s ease;
+    transform-style: preserve-3d;
+    filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3)); /* 添加图片阴影 */
 }
 
+/* 图片悬停效果 */
 .character-image:hover {
-    transform: scale(1.02);
+    transform: translateY(-5px) scale(1.03);
+    filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.4));
 }
 
 .image-info {
@@ -144,6 +184,7 @@
     background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
     padding: 1rem;
     border-radius: 0 0 16px 16px;
+    transform: translateZ(10px); /* 让信息浮在图片上方 */
 }
 
 .image-credit {
@@ -448,11 +489,16 @@
         height: 40vh;
         min-height: 300px;
         margin-top: 0.5rem;
+        perspective: 800px; /* 移动端减少透视 */
     }
     
     .character-container {
         width: 90%;
         height: 85%;
+    }
+    
+    .character-container:hover {
+        transform: rotateY(3deg) rotateX(1deg) scale(1.01);
     }
     
     .section-title {
@@ -524,6 +570,7 @@
     .character-section {
         height: 35vh;
         min-height: 250px;
+        perspective: 600px;
     }
     
     .character-container {
