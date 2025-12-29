@@ -1,17 +1,24 @@
-// 答案之书模块主类 - 云朵版
+// 答案之书v2.0 - 梦幻粉色重构版
 import { getRandomAnswer } from './answer-data.js';
-import { cssLoader } from '../../utils/css-loader.js';
+import { cssLoader } from '../../utils/css-loader.js'; // 导入CSS加载工具
 
 export default class AnswerBookModule {
     constructor() {
         this.state = 'IDLE'; // IDLE, THINKING, REVEALING, SHOWING
         this.currentAnswer = '';
         this.answerHistory = [];
+        this.isHistoryOpen = false;
         this.isHistoryExpanded = false;
+        this.waitingTexts = [
+            "魔法正在凝聚能量...",
+            "答案正在显现中...",
+            "宇宙正在回应你的问题...",
+            "神秘力量正在书写答案..."
+        ];
         
         // 绑定方法
         this.handleAskClick = this.handleAskClick.bind(this);
-        this.toggleHistory = this.toggleHistory.bind(this);
+        this.toggleHistoryExpansion = this.toggleHistoryExpansion.bind(this);
         this.clearHistory = this.clearHistory.bind(this);
     }
 
@@ -29,15 +36,15 @@ export default class AnswerBookModule {
             // 4. 绑定事件
             this.bindEvents();
             
-            // 5. 创建背景星星
-            this.createStars();
+            // 5. 创建魔法粒子背景
+            this.createMagicParticles();
             
         } catch (error) {
             console.error('答案之书模块初始化失败:', error);
             appContainer.innerHTML = `
-                <div class="card">
-                    <h2 class="card-title">答案之书加载失败</h2>
-                    <p class="card-content">魔法暂时失效了，请刷新页面重试</p>
+                <div class="card" style="background: rgba(255,255,255,0.9); padding: 2rem; border-radius: 20px; text-align: center;">
+                    <h2 style="color: #F48FB1; margin-bottom: 1rem;">答案之书加载失败</h2>
+                    <p style="color: #666;">魔法暂时失效了，请刷新页面重试</p>
                 </div>
             `;
         }
@@ -45,21 +52,23 @@ export default class AnswerBookModule {
 
     destroy() {
         // 清理事件监听
-        const cloudBg = document.querySelector('.cloud-bg');
         const askButton = document.querySelector('.ask-button');
-        const historyTab = document.querySelector('.history-tab');
+        const historyHeader = document.querySelector('.history-header');
         const clearHistoryBtn = document.querySelector('.clear-history-btn');
         
-        if (cloudBg) cloudBg.removeEventListener('click', this.handleAskClick);
         if (askButton) askButton.removeEventListener('click', this.handleAskClick);
-        if (historyTab) historyTab.removeEventListener('click', this.toggleHistory);
+        if (historyHeader) historyHeader.removeEventListener('click', this.toggleHistoryExpansion);
         if (clearHistoryBtn) clearHistoryBtn.removeEventListener('click', this.clearHistory);
         
         // 清理样式
         cssLoader.unload('answer-book-styles');
+        
+        // 清理粒子动画
+        this.clearParticles();
     }
 
     async loadStyles() {
+        // 使用CSS加载工具加载样式
         try {
             await cssLoader.load(
                 'scripts/modules/answer-book/answer-book.css',
@@ -72,6 +81,7 @@ export default class AnswerBookModule {
     }
 
     addFallbackStyles() {
+        // 添加基本的内联样式作为回退
         const style = document.createElement('style');
         style.id = 'answer-book-fallback-styles';
         style.textContent = `
@@ -80,61 +90,42 @@ export default class AnswerBookModule {
                 margin: 0 auto;
                 padding: 2rem 1rem;
                 min-height: 100vh;
-                background: #fff0f5;
+                background: linear-gradient(135deg, #FFE4E9, #FFD1DC);
+            }
+            .book-title {
+                font-size: 3rem;
                 text-align: center;
+                margin-bottom: 1rem;
+                color: #F48FB1;
             }
-            .cloud-bg {
-                width: 320px;
-                height: 200px;
-                margin: 1.5rem auto;
-                position: relative;
-            }
-            .cloud {
-                position: absolute;
-                width: 180px;
-                height: 80px;
-                background: white;
+            .magic-crystal-ball {
+                width: 300px;
+                height: 300px;
                 border-radius: 50%;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                box-shadow: 
-                    0 0 0 20px white,
-                    -50px -20px 0 25px white,
-                    50px -25px 0 30px white,
-                    -70px 0 0 20px white,
-                    70px -10px 0 25px white,
-                    -30px 20px 0 15px white,
-                    40px 15px 0 20px white;
-            }
-            .answer-display {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 280px;
-                height: 150px;
+                background: radial-gradient(circle at 30% 30%, white, #FFB6C1);
+                box-shadow: 0 0 50px rgba(244, 143, 177, 0.5);
+                margin: 2rem auto;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                text-align: center;
             }
             .answer-text {
-                font-size: 1.5rem;
+                font-size: 1.8rem;
                 color: #333;
                 font-family: 'Georgia', serif;
-                background: white;
+                text-align: center;
                 padding: 1rem;
-                border-radius: 10px;
             }
             .ask-button {
-                width: 85px;
-                height: 85px;
+                width: 100px;
+                height: 100px;
                 border-radius: 50%;
                 background: linear-gradient(135deg, #F48FB1, #FF8E53);
                 color: white;
                 border: none;
                 cursor: pointer;
+                font-size: 1.3rem;
+                font-weight: bold;
             }
         `;
         document.head.appendChild(style);
@@ -146,70 +137,151 @@ export default class AnswerBookModule {
                 <!-- 标题区域 -->
                 <div class="book-header">
                     <h1 class="book-title">答案之书</h1>
-                    <p class="book-subtitle">向魔法提问，获取你内心的答案</p>
+                    <p class="book-subtitle">在这里，向宇宙提问，倾听内心的声音。让魔法为你揭示隐藏的答案。</p>
+                    <p class="book-disclaimer">请记住：答案仅供参考，真正的选择永远在你心中。相信自己的直觉，勇敢前行。</p>
                 </div>
                 
-                <!-- 云朵背景容器 -->
-                <div class="cloud-bg" id="cloud-bg">
-                    <div class="cloud" id="cloud"></div>
-                    
-                    <!-- 答案显示区域 -->
-                    <div class="answer-display" id="answer-display">
-                        <div class="answer-text" id="answer-text"></div>
+                <!-- 答案展示区域 -->
+                <div class="answer-display-container">
+                    <div class="magic-crystal-ball">
+                        <div class="answer-display" id="answer-display">
+                            <div class="answer-text" id="answer-text">
+                                <div class="waiting-text" id="waiting-text">
+                                    准备好你的问题
+                                    <div class="waiting-dots">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- 控制区域 -->
-                <div class="control-area">
-                    <!-- 状态提示 -->
-                    <div class="status-indicator" id="status-indicator">
-                        准备好了吗？点击魔法球开始提问
-                    </div>
-                    
-                    <!-- 获取答案按钮 -->
+                <!-- 状态提示 -->
+                <div class="status-indicator" id="status-indicator">
+                    集中精神，思考你的问题，然后点击魔法球
+                </div>
+                
+                <!-- 控制按钮 -->
+                <div class="book-controls">
                     <button class="ask-button" id="ask-button">
                         <span class="button-text">提问</span>
                         <div class="button-loader"></div>
                     </button>
-                    
-                    <!-- 操作提示文本 -->
-                    <div class="instruction-text">
-                        双手合十，专注你的问题，然后点击上方按钮<br>
-                        答案仅供参考，最终的选择在你心中
-                    </div>
+                    <div class="action-tip">点击上方魔法球也可以获取答案</div>
                 </div>
                 
                 <!-- 历史记录区域 -->
                 <div class="history-section" id="history-section">
-                    <div class="history-tab">
+                    <div class="history-header">
                         <div style="display: flex; align-items: center;">
-                            <h3 class="history-tab-title">历史答案</h3>
+                            <h3 class="history-title">历史答案</h3>
                             <span class="history-count" id="history-count">0</span>
                         </div>
-                        <div class="history-tab-icon">▼</div>
+                        <div class="history-toggle-icon">▼</div>
                     </div>
                     
-                    <div class="history-content" id="history-content">
+                    <div class="history-list-container" id="history-list-container">
                         <ul class="history-list" id="history-list"></ul>
-                        <button class="clear-history-btn" id="clear-history-btn">清空历史</button>
+                        <button class="clear-history-btn" id="clear-history-btn">清空历史记录</button>
                     </div>
                 </div>
             </div>
         `;
         
         // 保存重要元素的引用
-        this.cloudBg = container.querySelector('#cloud-bg');
-        this.cloud = container.querySelector('#cloud');
+        this.crystalBall = container.querySelector('.magic-crystal-ball');
         this.answerDisplay = container.querySelector('#answer-display');
         this.answerText = container.querySelector('#answer-text');
+        this.waitingText = container.querySelector('#waiting-text');
         this.statusIndicator = container.querySelector('#status-indicator');
         this.askButton = container.querySelector('#ask-button');
         this.historySection = container.querySelector('#history-section');
         this.historyList = container.querySelector('#history-list');
-        this.historyContent = container.querySelector('#history-content');
-        this.historyTab = container.querySelector('.history-tab');
+        this.historyListContainer = container.querySelector('#history-list-container');
+        this.historyHeader = container.querySelector('.history-header');
         this.historyCount = document.querySelector('#history-count');
         this.clearHistoryBtn = document.querySelector('#clear-history-btn');
+    }
+
+    createMagicParticles() {
+        this.particleContainer = document.createElement('div');
+        this.particleContainer.className = 'particle-container';
+        this.particleContainer.style.position = 'fixed';
+        this.particleContainer.style.top = '0';
+        this.particleContainer.style.left = '0';
+        this.particleContainer.style.width = '100%';
+        this.particleContainer.style.height = '100%';
+        this.particleContainer.style.pointerEvents = 'none';
+        this.particleContainer.style.zIndex = '1';
+        
+        document.querySelector('.answer-book-container').appendChild(this.particleContainer);
+        
+        // 创建初始粒子
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => this.createParticle(), i * 300);
+        }
+        
+        // 持续创建粒子
+        this.particleInterval = setInterval(() => {
+            if (document.contains(this.particleContainer)) {
+                this.createParticle();
+            }
+        }, 800);
+    }
+
+    createParticle() {
+        if (!this.particleContainer) return;
+        
+        const particle = document.createElement('div');
+        particle.className = 'magic-particle';
+        
+        // 随机大小
+        const size = Math.random() * 6 + 3;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // 随机起始位置
+        const startX = Math.random() * window.innerWidth;
+        particle.style.left = `${startX}px`;
+        particle.style.top = `${window.innerHeight + 20}px`;
+        
+        // 随机颜色
+        const colors = [
+            'rgba(255, 182, 193, 0.9)',
+            'rgba(255, 105, 180, 0.8)',
+            'rgba(255, 192, 203, 0.7)',
+            'rgba(255, 160, 122, 0.6)',
+            'rgba(255, 255, 255, 0.9)'
+        ];
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        
+        // 随机动画参数
+        const duration = Math.random() * 3 + 2;
+        const delay = Math.random() * 2;
+        const endX = startX + (Math.random() * 100 - 50);
+        
+        particle.style.animation = `magic-float ${duration}s ease-in-out ${delay}s infinite`;
+        
+        this.particleContainer.appendChild(particle);
+        
+        // 移除粒子
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.remove();
+            }
+        }, (duration + delay) * 1000);
+    }
+
+    clearParticles() {
+        if (this.particleInterval) {
+            clearInterval(this.particleInterval);
+        }
+        if (this.particleContainer && this.particleContainer.parentNode) {
+            this.particleContainer.remove();
+        }
     }
 
     async handleAskClick() {
@@ -222,11 +294,11 @@ export default class AnswerBookModule {
         // 进入思考状态
         this.setState('THINKING');
         
-        // 1. 开始思考动画
-        this.showThinkingText();
+        // 1. 增强魔法球效果
+        this.enhanceCrystalBall();
         
-        // 2. 播放3秒寻找答案动画
-        await this.playSearchingAnimation(3000);
+        // 2. 随机显示等待文本
+        await this.showWaitingText();
         
         // 3. 获取随机答案
         this.currentAnswer = getRandomAnswer();
@@ -250,30 +322,27 @@ export default class AnswerBookModule {
         // 更新UI状态
         switch (newState) {
             case 'IDLE':
-                this.statusIndicator.textContent = '准备好了吗？点击魔法球开始提问';
+                this.statusIndicator.textContent = '集中精神，思考你的问题，然后点击魔法球';
                 this.statusIndicator.className = 'status-indicator';
-                this.cloud.classList.remove('thinking');
                 this.askButton.disabled = false;
                 this.askButton.classList.remove('loading');
                 this.askButton.querySelector('.button-text').textContent = '提问';
                 break;
                 
             case 'THINKING':
-                this.statusIndicator.textContent = '魔法正在寻找答案，请稍候...';
+                this.statusIndicator.textContent = '魔法正在运作，请保持专注...';
                 this.statusIndicator.className = 'status-indicator thinking';
-                this.cloud.classList.add('thinking');
                 this.askButton.disabled = true;
                 this.askButton.classList.add('loading');
                 break;
                 
             case 'REVEALING':
-                this.statusIndicator.textContent = '魔法答案正在显现...';
+                this.statusIndicator.textContent = '答案正在显现...';
                 break;
                 
             case 'SHOWING':
-                this.statusIndicator.textContent = '这是魔法给你的答案';
+                this.statusIndicator.textContent = '这是宇宙给你的答案';
                 this.statusIndicator.className = 'status-indicator';
-                this.cloud.classList.remove('thinking');
                 this.askButton.disabled = false;
                 this.askButton.classList.remove('loading');
                 this.askButton.querySelector('.button-text').textContent = '再次提问';
@@ -281,121 +350,59 @@ export default class AnswerBookModule {
         }
     }
 
-    showThinkingText() {
-        // 清空答案文本
-        this.answerText.innerHTML = '';
+    enhanceCrystalBall() {
+        // 增强魔法球的光效
+        this.crystalBall.style.animation = 'crystal-float 1s ease-in-out infinite alternate';
+        this.crystalBall.style.boxShadow = 
+            'inset 0 0 80px rgba(255, 255, 255, 0.9), ' +
+            'inset 0 0 120px rgba(255, 182, 193, 0.7), ' +
+            '0 0 120px rgba(244, 143, 177, 0.8), ' +
+            '0 0 180px rgba(244, 143, 177, 0.6), ' +
+            '0 0 0 25px rgba(255, 255, 255, 0.3)';
+    }
+
+    async showWaitingText() {
+        // 隐藏之前的答案
+        const answerChars = this.answerText.querySelectorAll('.char');
+        answerChars.forEach(char => char.remove());
         
-        // 显示思考中文本
-        const thinkingText = document.createElement('div');
-        thinkingText.className = 'thinking-text';
-        thinkingText.innerHTML = `
-            思考中<span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        // 显示等待文本
+        this.waitingText.style.display = 'flex';
+        
+        // 随机选择一个等待文本
+        const randomText = this.waitingTexts[Math.floor(Math.random() * this.waitingTexts.length)];
+        this.waitingText.innerHTML = `
+            ${randomText}
+            <div class="waiting-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         `;
-        this.answerText.appendChild(thinkingText);
         
-        // 显示答案区域
-        this.answerDisplay.classList.add('show');
-    }
-
-    playSearchingAnimation(duration) {
-        return new Promise(resolve => {
-            // 创建星星动画
-            this.createSearchingStars();
-            
-            setTimeout(() => {
-                // 停止星星动画
-                this.stopSearchingStars();
-                resolve();
-            }, duration);
-        });
-    }
-
-    createSearchingStars() {
-        const cloudRect = this.cloudBg.getBoundingClientRect();
-        const centerX = cloudRect.left + cloudRect.width / 2;
-        const centerY = cloudRect.top + cloudRect.height / 2;
+        // 等待3秒
+        await new Promise(resolve => setTimeout(resolve, 3000));
         
-        // 创建围绕云朵旋转的星星
-        for (let i = 0; i < 8; i++) {
-            setTimeout(() => {
-                this.createStar(centerX, centerY, i * 45, 60);
-            }, i * 200);
-        }
-    }
-
-    createStar(centerX, centerY, angle, radius) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        
-        // 计算起始位置
-        const radians = angle * (Math.PI / 180);
-        const startX = centerX + Math.cos(radians) * radius;
-        const startY = centerY + Math.sin(radians) * radius;
-        
-        star.style.left = `${startX}px`;
-        star.style.top = `${startY}px`;
-        document.querySelector('.answer-book-container').appendChild(star);
-        
-        // 星星出现动画
-        star.animate([
-            { opacity: 0, transform: 'scale(0)' },
-            { opacity: 1, transform: 'scale(1)', offset: 0.3 },
-            { opacity: 0.8, transform: 'scale(0.8)', offset: 0.7 },
-            { opacity: 0, transform: 'scale(0)' }
-        ], {
-            duration: 1500,
-            easing: 'ease-in-out'
-        });
-        
-        // 移除星星
-        setTimeout(() => {
-            if (star.parentNode) star.remove();
-        }, 1500);
-    }
-
-    stopSearchingStars() {
-        // 星星聚集到云朵中心
-        const cloudRect = this.cloudBg.getBoundingClientRect();
-        const centerX = cloudRect.left + cloudRect.width / 2;
-        const centerY = cloudRect.top + cloudRect.height / 2;
-        
-        // 创建几个聚集的星星
-        for (let i = 0; i < 5; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            
-            // 随机起始位置
-            const startX = centerX + (Math.random() - 0.5) * 200;
-            const startY = centerY + (Math.random() - 0.5) * 200;
-            
-            star.style.left = `${startX}px`;
-            star.style.top = `${startY}px`;
-            document.querySelector('.answer-book-container').appendChild(star);
-            
-            // 向中心聚集
-            star.animate([
-                { opacity: 0.8, transform: 'scale(1)' },
-                { opacity: 0, transform: `translate(${centerX - startX}px, ${centerY - startY}px) scale(0)` }
-            ], {
-                duration: 800,
-                easing: 'ease-in',
-                delay: i * 100
-            });
-            
-            // 移除星星
-            setTimeout(() => {
-                if (star.parentNode) star.remove();
-            }, 1500);
-        }
+        // 隐藏等待文本
+        this.waitingText.style.display = 'none';
     }
 
     async playRevealAnimation(answer) {
-        // 清空思考文本
+        // 恢复魔法球正常状态
+        this.crystalBall.style.animation = 'crystal-float 6s ease-in-out infinite';
+        this.crystalBall.style.boxShadow = 
+            'inset 0 0 60px rgba(255, 255, 255, 0.8), ' +
+            'inset 0 0 100px rgba(255, 182, 193, 0.5), ' +
+            '0 0 80px rgba(244, 143, 177, 0.6), ' +
+            '0 0 120px rgba(244, 143, 177, 0.4), ' +
+            '0 0 0 15px rgba(255, 255, 255, 0.2)';
+        
+        // 清空答案文本
         this.answerText.innerHTML = '';
         
         // 逐字显示答案
         const chars = answer.split('');
-        const delay = 60; // 每个字符的显示延迟
+        const delay = 80; // 每个字符的显示延迟
         
         for (let i = 0; i < chars.length; i++) {
             const charSpan = document.createElement('span');
@@ -411,29 +418,20 @@ export default class AnswerBookModule {
             
             // 字符显示动画
             setTimeout(() => {
-                charSpan.style.animation = 'char-appear 0.6s ease forwards';
+                charSpan.style.animation = 'char-float 0.8s ease forwards';
             }, i * delay);
         }
         
         // 等待动画完成
         await new Promise(resolve => {
-            setTimeout(resolve, chars.length * delay + 400);
+            setTimeout(resolve, chars.length * delay + 500);
         });
     }
 
-    resetCloud() {
-        // 停止思考动画
-        this.cloud.classList.remove('thinking');
-        
-        // 隐藏答案
-        this.answerDisplay.classList.remove('show');
-        this.answerText.innerHTML = '';
-    }
-
     bindEvents() {
-        // 云朵背景点击事件
-        if (this.cloudBg) {
-            this.cloudBg.addEventListener('click', this.handleAskClick);
+        // 魔法球点击事件
+        if (this.crystalBall) {
+            this.crystalBall.addEventListener('click', this.handleAskClick);
         }
         
         // 按钮点击事件
@@ -441,9 +439,9 @@ export default class AnswerBookModule {
             this.askButton.addEventListener('click', this.handleAskClick);
         }
         
-        // 历史记录标签页点击事件
-        if (this.historyTab) {
-            this.historyTab.addEventListener('click', this.toggleHistory);
+        // 历史记录展开/收起
+        if (this.historyHeader) {
+            this.historyHeader.addEventListener('click', this.toggleHistoryExpansion);
         }
         
         // 清空历史记录
@@ -452,47 +450,9 @@ export default class AnswerBookModule {
         }
     }
 
-    // 背景星星
-    createStars() {
-        const container = document.querySelector('.answer-book-container');
-        const starCount = 15;
-        
-        for (let i = 0; i < starCount; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            
-            // 随机位置
-            const left = Math.random() * 100;
-            const top = Math.random() * 100;
-            
-            star.style.left = `${left}%`;
-            star.style.top = `${top}%`;
-            
-            // 随机闪烁动画
-            const delay = Math.random() * 3;
-            const duration = 1 + Math.random() * 2;
-            
-            star.style.animation = `
-                star-twinkle ${duration}s ease-in-out ${delay}s infinite alternate
-            `;
-            
-            // 定义动画
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes star-twinkle {
-                    0%, 100% { opacity: 0.2; transform: scale(0.8); }
-                    50% { opacity: 0.8; transform: scale(1.2); }
-                }
-            `;
-            
-            container.appendChild(star);
-            if (i === 0) document.head.appendChild(style);
-        }
-    }
-
     // 历史记录功能
     loadHistory() {
-        const savedHistory = localStorage.getItem('taoci_answer_history');
+        const savedHistory = localStorage.getItem('taoci_answer_history_v2');
         if (savedHistory) {
             this.answerHistory = JSON.parse(savedHistory);
             this.renderHistory();
@@ -501,7 +461,7 @@ export default class AnswerBookModule {
     }
 
     saveHistory() {
-        localStorage.setItem('taoci_answer_history', JSON.stringify(this.answerHistory));
+        localStorage.setItem('taoci_answer_history_v2', JSON.stringify(this.answerHistory));
     }
 
     addToHistory(answer) {
@@ -511,7 +471,8 @@ export default class AnswerBookModule {
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
+                second: '2-digit'
             })
         };
         
@@ -528,7 +489,7 @@ export default class AnswerBookModule {
         
         // 如果历史记录是收起的，自动展开
         if (!this.isHistoryExpanded) {
-            this.toggleHistory();
+            this.toggleHistoryExpansion();
         }
     }
 
@@ -538,7 +499,7 @@ export default class AnswerBookModule {
         if (this.answerHistory.length === 0) {
             this.historyList.innerHTML = `
                 <li class="no-history">
-                    还没有历史答案，点击上方按钮开始提问
+                    还没有历史答案，点击上方魔法球开始提问
                 </li>
             `;
             return;
@@ -559,29 +520,40 @@ export default class AnswerBookModule {
     }
 
     clearHistory() {
-        if (confirm('确定要清空所有历史答案吗？')) {
+        if (confirm('确定要清空所有历史答案吗？此操作不可撤销。')) {
             this.answerHistory = [];
             this.saveHistory();
             this.renderHistory();
             this.updateHistoryCount();
+            
+            // 显示提示
+            this.statusIndicator.textContent = '历史记录已清空';
+            this.statusIndicator.style.background = 'rgba(255, 100, 100, 0.2)';
+            this.statusIndicator.style.borderColor = 'rgba(255, 100, 100, 0.4)';
+            
+            setTimeout(() => {
+                this.statusIndicator.textContent = '这是宇宙给你的答案';
+                this.statusIndicator.style.background = '';
+                this.statusIndicator.style.borderColor = '';
+            }, 2000);
         }
     }
 
-    toggleHistory() {
+    toggleHistoryExpansion() {
         this.isHistoryExpanded = !this.isHistoryExpanded;
         
-        const historyTabIcon = document.querySelector('.history-tab-icon');
-        const historyContent = this.historyContent;
+        const toggleIcon = document.querySelector('.history-toggle-icon');
+        const listContainer = this.historyListContainer;
         
         if (this.isHistoryExpanded) {
-            historyContent.classList.add('expanded');
-            if (historyTabIcon) {
-                historyTabIcon.classList.add('expanded');
+            listContainer.classList.add('expanded');
+            if (toggleIcon) {
+                toggleIcon.classList.add('expanded');
             }
         } else {
-            historyContent.classList.remove('expanded');
-            if (historyTabIcon) {
-                historyTabIcon.classList.remove('expanded');
+            listContainer.classList.remove('expanded');
+            if (toggleIcon) {
+                toggleIcon.classList.remove('expanded');
             }
         }
     }
