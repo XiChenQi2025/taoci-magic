@@ -77,54 +77,86 @@ export default class AnswerBookModule {
     }
 
     addFallbackStyles() {
-        // 添加基本的内联样式作为回退
+        // 简约回退样式，与主骨架保持一致
         const style = document.createElement('style');
         style.id = 'answer-book-fallback-styles';
         style.textContent = `
             .answer-book-container {
                 max-width: 900px;
                 margin: 0 auto;
-                padding: 2rem 1rem;
-                min-height: 100vh;
-                background: #fff0f5;
+                padding: 2.5rem 1.5rem;
+                min-height: calc(100vh - 200px);
+                background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 50%, #EEEEEE 100%);
             }
             .book-title {
                 font-size: 2.8rem;
+                font-weight: 700;
                 text-align: center;
-                margin-bottom: 0.5rem;
-                color: #FF6B9D;
+                margin-bottom: 1rem;
+                color: #CE93D8;
+                position: relative;
+                display: inline-block;
+            }
+            .book-title::after {
+                content: '';
+                position: absolute;
+                bottom: -5px;
+                left: 25%;
+                width: 50%;
+                height: 3px;
+                background: linear-gradient(135deg, #CE93D8, #F48FB1);
+                border-radius: 2px;
             }
             .book-container {
                 width: 500px;
-                height: 300px;
-                margin: 1rem auto;
-                background: #fff;
-                border-radius: 16px;
-                border: 1px solid #FF6B9D;
+                height: 320px;
+                margin: 1.5rem auto;
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 20px;
+                border: 3px solid rgba(255, 255, 255, 0.95);
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
             }
             .answer-display {
-                background: #fff;
-                border-radius: 10px;
-                padding: 1.5rem;
-                text-align: center;
+                background: rgba(255, 255, 255, 0.98);
+                border-radius: 16px;
+                padding: 2rem;
+                border: 2px solid rgba(255, 255, 255, 0.9);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
             }
             .answer-text {
                 font-size: 1.8rem;
-                color: #333;
-                font-family: 'Georgia', serif;
+                color: #424242;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-weight: 500;
             }
             .ask-button {
-                width: 90px;
-                height: 90px;
+                width: 100px;
+                height: 100px;
                 border-radius: 50%;
-                background: radial-gradient(circle at 30% 30%, #FF6B9D, #9D4EDD);
+                background: linear-gradient(135deg, #CE93D8, #9575CD);
                 color: white;
-                border: none;
+                border: 3px solid rgba(255, 255, 255, 0.95);
                 cursor: pointer;
+                font-weight: 600;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            }
+            .history-section {
+                background: rgba(255, 255, 255, 0.9);
+                border-radius: 18px;
+                border: 3px solid rgba(255, 255, 255, 0.95);
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            }
+            .history-section::before {
+                content: '';
+                display: block;
+                height: 4px;
+                background: linear-gradient(135deg, #CE93D8, #F48FB1);
+                border-radius: 18px 18px 0 0;
             }
         `;
         document.head.appendChild(style);
     }
+
 
     render(container) {
         container.innerHTML = `
