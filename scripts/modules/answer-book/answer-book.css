@@ -32,6 +32,7 @@
     position: relative;
     z-index: 1;
     animation: fade-in 0.6s ease-out;
+    text-align: center; /* 添加：全局文本居中 */
 }
 
 /* 简约背景效果 */
@@ -70,6 +71,7 @@
     position: relative;
     display: inline-block;
     padding-bottom: 10px;
+    width: 100%; /* 确保居中 */
 }
 
 .book-title::after {
@@ -92,6 +94,7 @@
     font-weight: 400;
     max-width: 600px;
     margin: 0 auto 1rem;
+    text-align: center; /* 确保居中 */
 }
 
 .book-disclaimer {
@@ -105,6 +108,7 @@
     border: var(--answer-border-light);
     display: inline-block;
     box-shadow: var(--shadow-sm);
+    text-align: center; /* 确保居中 */
 }
 
 /* 书本容器 - 简约卡片设计 */
@@ -203,6 +207,7 @@
     word-wrap: break-word;
     text-align: center;
     position: relative;
+    width: 100%; /* 确保居中 */
 }
 
 .answer-text .char {
@@ -275,10 +280,11 @@
     gap: 1rem;
 }
 
+/* 修改：获取答案按钮改为长方形圆角按钮，圆角大一些 */
 .ask-button {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
+    width: 180px; /* 改为长方形宽度 */
+    height: 60px; /* 改为长方形高度 */
+    border-radius: 40px; /* 加大圆角，接近两边半圆 */
     padding: 0;
     border: var(--answer-border);
     cursor: pointer;
@@ -330,7 +336,7 @@
 }
 
 .ask-button .button-text {
-    font-size: 1rem;
+    font-size: 1.1rem; /* 稍微增大字体 */
     color: white;
     font-weight: 600;
     letter-spacing: 0.5px;
@@ -381,6 +387,7 @@
     border: var(--answer-border);
     overflow: hidden;
     box-shadow: var(--shadow-lg);
+    text-align: center; /* 添加：历史记录区域文本居中 */
 }
 
 .history-section::before {
@@ -490,6 +497,7 @@
     flex: 1;
     padding-right: 1rem;
     color: #424242;
+    text-align: left; /* 历史答案文本保持左对齐 */
 }
 
 .history-time {
@@ -524,6 +532,7 @@
     font-size: 0.95rem;
     font-weight: 600;
     backdrop-filter: blur(5px);
+    text-align: center; /* 确保按钮文本居中 */
 }
 
 .clear-history-btn:hover {
@@ -605,7 +614,7 @@
     background: linear-gradient(135deg, var(--answer-primary-dark), #BA68C8);
 }
 
-/* 响应式设计 */
+/* 响应式设计 - 重点调整卡片响应式 */
 @media (max-width: 768px) {
     .answer-book-container {
         padding: 1.8rem 1rem;
@@ -620,11 +629,14 @@
         padding: 0 0.5rem;
     }
     
+    /* 修改：在小屏幕设备上保持卡片比例，不拉伸 */
     .book-container {
         width: 90%;
-        height: 280px;
         max-width: 450px;
+        height: 280px; /* 固定高度，不拉伸 */
         margin: 1rem auto;
+        /* 添加纵横比保持 */
+        aspect-ratio: 5/3.2; /* 500/320 ≈ 1.5625 */
     }
     
     .answer-text {
@@ -632,13 +644,15 @@
         padding: 0.5rem;
     }
     
+    /* 修改：响应式按钮调整 */
     .ask-button {
-        width: 85px;
-        height: 85px;
+        width: 160px; /* 响应式调整宽度 */
+        height: 55px; /* 响应式调整高度 */
+        border-radius: 35px; /* 保持大圆角 */
     }
     
     .ask-button .button-text {
-        font-size: 0.95rem;
+        font-size: 1rem; /* 响应式字体调整 */
     }
     
     .history-section {
@@ -660,9 +674,12 @@
 }
 
 @media (max-width: 480px) {
+    /* 修改：在超小屏幕上进一步优化卡片 */
     .book-container {
         width: 95%;
-        height: 240px;
+        height: 240px; /* 固定高度，不拉伸 */
+        max-width: 380px; /* 限制最大宽度 */
+        aspect-ratio: 5/3.2; /* 保持比例 */
     }
     
     .answer-text {
@@ -673,9 +690,15 @@
         font-size: 1.9rem;
     }
     
+    /* 修改：超小屏幕按钮调整 */
     .ask-button {
-        width: 80px;
-        height: 80px;
+        width: 140px;
+        height: 50px;
+        border-radius: 30px; /* 保持大圆角 */
+    }
+    
+    .ask-button .button-text {
+        font-size: 0.95rem;
     }
     
     .history-header {
@@ -692,5 +715,28 @@
     .history-time {
         align-self: flex-end;
         font-size: 0.75rem;
+    }
+}
+
+/* 添加：针对超小屏幕的额外优化 */
+@media (max-width: 360px) {
+    .book-container {
+        width: 95%;
+        height: 220px; /* 进一步减小高度，但保持比例 */
+        max-width: 320px;
+    }
+    
+    .answer-text {
+        font-size: 1.3rem;
+    }
+    
+    .book-title {
+        font-size: 1.7rem;
+    }
+    
+    .ask-button {
+        width: 130px;
+        height: 48px;
+        border-radius: 28px;
     }
 }
